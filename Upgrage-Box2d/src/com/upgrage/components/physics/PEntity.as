@@ -32,11 +32,29 @@
 		protected override function setup(e:Event):void {
 			super.setup(e);
 			
-			_shape = new b2CircleShape(this.width/2/_world.pscale);
+			/*_shape = new b2CircleShape(this.width/2/_world.pscale);
 			_fixtureDef.shape = _shape;
 			_fixture = _body.CreateFixture(_fixtureDef);
-			_body.SetFixedRotation(true);
+			_body.SetFixedRotation(true);*/
 		}
+		
+		/*[Inspectable(name="Is Static", type=Boolean, defaultValue=false)]
+		public override function set isStatic(val:Boolean):void{
+			super.isStatic = val;
+		}
+		public override function get isStatic():Boolean { return super.isStatic; }
+		
+		[Inspectable(name="Fixed Rotation", type=Boolean, defaultValue=true)]
+		public override function set isRotationFixed(val:Boolean):void{
+			super.isRotationFixed = val;
+		}
+		public override function get isRotationFixed():Boolean { return super.isRotationFixed; }
+		
+		[Inspectable(name="Friction", type=Number, defaultValue=0.6)]
+		public override function set friction(val:Number):void{
+			super.friction = val;
+		}
+		public override function get friction():Number { return super.friction; }*/
 	}
 	
 }

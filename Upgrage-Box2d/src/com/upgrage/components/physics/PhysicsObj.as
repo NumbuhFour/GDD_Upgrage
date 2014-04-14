@@ -80,7 +80,7 @@
 		
 		protected override function draw():void {
 			super.draw();
-			if(this.isLivePreview || PhysicsWorld.debug){
+			if(this.isLivePreview/* || PhysicsWorld.DEBUG*/){
 				drawBounds();
 			}
 		}
@@ -88,7 +88,7 @@
 		private function onComponentChange(e:ComponentEvent):void { 
 			graphics.clear();
 			//this.invalidate(InvalidationType.SIZE);
-			if(this.isLivePreview || PhysicsWorld.debug){
+			if(this.isLivePreview/* || PhysicsWorld.DEBUG*/){
 				drawBounds();
 			}
 		}
@@ -122,7 +122,7 @@
 				this._followingObject.y = this.y;
 				this._followingObject.rotation = this.rotation;
 			}
-			if(this.isLivePreview || PhysicsWorld.debug){
+			if(this.isLivePreview/* || PhysicsWorld.DEBUG*/){
 				drawBounds();
 			}
 		}
