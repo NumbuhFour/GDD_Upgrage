@@ -52,6 +52,7 @@
 		}
 		
 		private function onEnter_Frame(e:Event):void{
+			stage.focus = stage;
 			this.removeEventListener(Event.ENTER_FRAME,onEnter_Frame);
 			var i:int =0;
 			for(i=0; i < parent.numChildren; i++){

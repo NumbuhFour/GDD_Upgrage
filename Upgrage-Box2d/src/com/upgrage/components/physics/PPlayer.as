@@ -98,10 +98,10 @@
 		public override function onTick(e:Event):void {
 			super.onTick(e);
 			
-			_kLeft = Keyboarder.keyIsDown(Keyboard.A);
-			_kRight = Keyboarder.keyIsDown(Keyboard.D);
-			_kUp = Keyboarder.keyIsDown(Keyboard.W);
-			_kDown = Keyboarder.keyIsDown(Keyboard.S);
+			_kLeft = Keyboarder.keyIsDown(Keyboard.A) || Keyboarder.keyIsDown(Keyboard.LEFT);
+			_kRight = Keyboarder.keyIsDown(Keyboard.D) || Keyboarder.keyIsDown(Keyboard.RIGHT);
+			_kUp = Keyboarder.keyIsDown(Keyboard.W) || Keyboarder.keyIsDown(Keyboard.UP);
+			_kDown = Keyboarder.keyIsDown(Keyboard.S) || Keyboarder.keyIsDown(Keyboard.DOWN);
 			_kDashLeft = Keyboarder.keyIsDown(Keyboard.Q);
 			_kDashRight = Keyboarder.keyIsDown(Keyboard.E);
 			
