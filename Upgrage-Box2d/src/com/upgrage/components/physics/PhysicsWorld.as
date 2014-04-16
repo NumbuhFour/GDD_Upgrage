@@ -2,6 +2,7 @@
 	import Box2D.Dynamics.b2World;
 	import Box2D.Common.Math.b2Vec2;
 	import flash.display.MovieClip;
+	import flash.display.DisplayObject;
 	import flash.events.Event;
 	import flash.utils.Timer;
 	import flash.events.TimerEvent;
@@ -37,11 +38,6 @@
 		private function onAdded(e:Event):void {
 			this.removeEventListener(Event.ADDED_TO_STAGE, onAdded);
 			
-			this.dispatchEvent(new Event(DONE_LOADING));
-			_stepTimer = new Timer(stepTime);
-			_stepTimer.addEventListener(TimerEvent.TIMER,onTick);
-			_stepTimer.start();
-			
 			
 			//Debugging
 			dbg = new b2DebugDraw();
@@ -51,7 +47,25 @@
 			dbg.SetLineThickness(1.0);
 			dbg.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_centerOfMassBit | b2DebugDraw.e_jointBit/* | b2DebugDraw.e_aabbBit*/);
 			_world.SetDebugDraw(dbg);
-			addChild(dbg.GetSprite());
+			parent.addChild(dbg.GetSprite());
+			this.addEventListener(Event.ENTER_FRAME,onEnter_Frame);
+		}
+		
+		private function onEnter_Frame(e:Event):void{
+			this.removeEventListener(Event.ENTER_FRAME,onEnter_Frame);
+			var i:int =0;
+			for(i=0; i < parent.numChildren; i++){
+				var c:DisplayObject = parent.getChildAt(i);
+				if(c is PhysicsObj){
+					var po:PhysicsObj = c as PhysicsObj;
+					po.setInitialWorld(this);
+				}
+			}
+			
+			this.dispatchEvent(new Event(DONE_LOADING));
+			_stepTimer = new Timer(stepTime);
+			_stepTimer.addEventListener(TimerEvent.TIMER,onTick);
+			_stepTimer.start();
 		}
 		
 		private function onTick(e:TimerEvent):void {
