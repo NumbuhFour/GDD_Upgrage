@@ -38,14 +38,13 @@
 		public function PhysicsObj() {
 			_bodyDef = new b2BodyDef();
 			_fixtureDef = new b2FixtureDef();
-			parent.addEventListener(PhysicsWorld.DONE_LOADING,setup);
 			
 			if(this.isLivePreview) this.addEventListener(ComponentEvent.RESIZE, onComponentChange);
 		}
 		
 		protected function setup(e:Event):void { //Called by world when things are finished loading.
-			parent.removeEventListener(PhysicsWorld.DONE_LOADING,setup);
-			if(parent is PhysicsWorld) _world = parent as PhysicsWorld;
+			_world.removeEventListener(PhysicsWorld.DONE_LOADING,setup);
+			//if(parent is PhysicsWorld) _world = parent as PhysicsWorld;
 			_body = _world.w.CreateBody(_bodyDef);
 			_body.SetUserData(this);
 			trace("SETUP " + _body.GetUserData());
@@ -125,6 +124,11 @@
 			if(this.isLivePreview/* || PhysicsWorld.DEBUG*/){
 				drawBounds();
 			}
+		}
+		
+		public function setInitialWorld(val:PhysicsWorld):void{
+			this._world = val;
+			this._world.addEventListener(PhysicsWorld.DONE_LOADING,setup);
 		}
 		
 		
