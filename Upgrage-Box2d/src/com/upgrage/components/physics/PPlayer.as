@@ -23,7 +23,7 @@
 		public static var JUMP_FORCE:Number = 9.2;
 		public static var MID_AIR_JUMPS:Number = 1;
 		public static var HORIZONTAL_DAMPENING_ONGROUND = 0.8;
-		public static var HORIZONTAL_DAMPENING_INAIR = 0.01;
+		public static var HORIZONTAL_DAMPENING_INAIR = 0.3;
 		public static var WALL_SLIDE_DURATION = 20;
 		public static var DASH_LENGTH = 20;
 		
@@ -105,7 +105,7 @@
 			_kDashLeft = Keyboarder.keyIsDown(Keyboard.Q);
 			_kDashRight = Keyboarder.keyIsDown(Keyboard.E);
 			
-			if(!_kLeft && !_kRight) applyHorizontalDrag();
+			if((!_kLeft && !_kRight) || !_hitBelow) applyHorizontalDrag();
 			
 			wallSlide();
 			
