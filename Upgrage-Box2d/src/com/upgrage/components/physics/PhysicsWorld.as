@@ -28,6 +28,8 @@
 		
 		private var _collisionHandler;
 		
+		private var _paused:Boolean = false;
+		
 		public function PhysicsWorld() {
 			_world = new b2World(new b2Vec2(0,10), true);
 			_collisionHandler = new CollisionHandler(this);
@@ -70,9 +72,13 @@
 		}
 		
 		private function onTick(e:TimerEvent):void {
-			_world.ClearForces();
-			_world.Step(stepTime,10,10);
-			this.dispatchEvent(new Event(TICK_WORLD));
+			
+			if(!_paused){
+				_world.ClearForces();
+				_world.Step(stepTime,10,10);
+				this.dispatchEvent(new Event(TICK_WORLD));
+			}
+			
 			/*for (var i:int = 0; i < this.numChildren; i++){
 				var s:DisplayObject = this.getChildAt(i);
 				if(s is PhysObj) {
@@ -115,6 +121,9 @@
 			if(DEBUG) _world.DrawDebugData();
 			else dbg.GetSprite().graphics.clear();
 		}
+		
+		public function pause():void { _paused = true; }
+		public function unpause():void { _paused = false; }
 
 
 		public function get pscale():Number { return 40; } // Pixels per meter ratio for the physics engine
