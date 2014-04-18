@@ -16,16 +16,18 @@
 	
 	public class PPlayer extends PEntity {
 		
-		public static var MAX_SPEED:Number = 12;
+		public static var MAX_SPEED:Number = 7;
 		public static var ACCEL_SPEED_ONGROUND:Number = 1.2; 
-		public static var ACCEL_SPEED_INAIR:Number = 0.4;
+		public static var ACCEL_SPEED_INAIR:Number = 0.7;
 		public static var DASH_SPEED:Number = 20;
 		public static var JUMP_FORCE:Number = 9.2;
 		public static var MID_AIR_JUMPS:Number = 1;
-		public static var HORIZONTAL_DAMPENING_ONGROUND = 0.8;
-		public static var HORIZONTAL_DAMPENING_INAIR = 0.01;
+		public static var HORIZONTAL_DAMPENING_ONGROUND = 0.8; //Friction on ground
+		public static var HORIZONTAL_DAMPENING_INAIR = 0.03; //Friction in air
 		public static var WALL_SLIDE_DURATION = 20;
 		public static var DASH_LENGTH = 20;
+		public static var WALL_JUMP_UP_PERCENTAGE = 0.7; //When jumping off a wall, jump upwards with a force of x*JUMP_FORCE
+		public static var WALL_JUMP_OUT_PERCENTAGE = 2; //When jumping off a wall, jump off from the wall with a force of x*ACCEL_SPEED_ONGROUND
 		
 		//Body
 		private var _torsoShape:b2Shape;
@@ -105,7 +107,7 @@
 			_kDashLeft = Keyboarder.keyIsDown(Keyboard.Q);
 			_kDashRight = Keyboarder.keyIsDown(Keyboard.E);
 			
-			if(!_kLeft && !_kRight) applyHorizontalDrag();
+			if((!_kLeft && !_kRight ) || (_kLeft == _kRight) || !_hitBelow) applyHorizontalDrag();
 			
 			wallSlide();
 			
@@ -122,18 +124,18 @@
 				_body.ApplyImpulse(new b2Vec2(-(_hitBelow ? ACCEL_SPEED_ONGROUND:ACCEL_SPEED_INAIR)*_body.GetMass(),0),new b2Vec2());
 				
 			}if(_kUp){
-				if(this._isOnWall/*TODO && _canJumpAgain*/){
-					var jumpOff:Number = JUMP_FORCE*0.7;
+				if(this._isOnWall/*TODO && _canJumpAgain*/){ //Wall jump
+					var jumpOff:Number = JUMP_FORCE*WALL_JUMP_UP_PERCENTAGE;
 					var pushOff:Number = 0;
 					if(_hitLeft){
-						pushOff = ACCEL_SPEED_ONGROUND*2;
+						pushOff = ACCEL_SPEED_ONGROUND*WALL_JUMP_OUT_PERCENTAGE;
 					}else if(_hitRight){
-						pushOff = -ACCEL_SPEED_ONGROUND*2;
+						pushOff = -ACCEL_SPEED_ONGROUND*WALL_JUMP_OUT_PERCENTAGE;
 					}
-					_body.ApplyImpulse(new b2Vec2(pushOff*_body.GetMass(),-jumpOff*_body.GetMass()),new b2Vec2());
+					_body.ApplyImpulse(new b2Vec2(pushOff*_body.GetMass(),-jumpOff*_body.GetMass()),_body.GetWorldCenter());
 					this._midAirJumpsLeft = 0;
 					this._isOnWall = false;	
-				}else if(_hitBelow || _midAirJumpsLeft > 0){
+				}else if(_hitBelow || _midAirJumpsLeft > 0){ //jump & double jump
 					var doJump:Boolean = false;
 					if(_hitBelow && this._canJumpAgain) {
 						this._midAirJumpsLeft = PPlayer.MID_AIR_JUMPS;
@@ -203,7 +205,7 @@
 			if(_hitBelow) _canWallSlide = true;
 		}
 		
-		protected override function setup(e:Event):void {
+		protected override function setup(e:Event):void { //Box2d Physics initialization
 			super.setup(e);
 			
 			/*_shape = new b2CircleShape(this.width/2/_world.pscale);
