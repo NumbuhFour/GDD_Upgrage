@@ -11,6 +11,7 @@
 		
 		public function Document() {
 			new Keyboarder(this);
+			ScriptParser.parser.loadScripts("levels.txt");
 			//this.addEventListener(Event.ENTER_FRAME,onAdded);
 			//this.addEventListener(Event.EXIT_FRAME,onRemove);
 		}
