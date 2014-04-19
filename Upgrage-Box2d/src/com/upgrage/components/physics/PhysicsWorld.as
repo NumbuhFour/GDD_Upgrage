@@ -12,6 +12,7 @@
 	import flash.ui.Keyboard;
 	import flash.display.Sprite;
 	import flash.display.Graphics;
+	import com.upgrage.DialogBox;
 	
 	public class PhysicsWorld extends MovieClip{
 		
@@ -30,7 +31,13 @@
 		
 		private var _paused:Boolean = false;
 		
+		private var _currentFrame:Number = 0;
+		
 		public function PhysicsWorld() {
+			start();
+		}
+		
+		private function start():void{
 			_world = new b2World(new b2Vec2(0,10), true);
 			_collisionHandler = new CollisionHandler(this);
 			_world.SetContactListener(_collisionHandler);
@@ -54,8 +61,9 @@
 		}
 		
 		private function onEnter_Frame(e:Event):void{
-			stage.focus = stage;
 			this.removeEventListener(Event.ENTER_FRAME,onEnter_Frame);
+			_currentFrame = MovieClip(parent).currentFrame;
+			stage.focus = stage;
 			var i:int =0;
 			for(i=0; i < parent.numChildren; i++){
 				var c:DisplayObject = parent.getChildAt(i);
@@ -69,16 +77,26 @@
 			_stepTimer = new Timer(stepTime);
 			_stepTimer.addEventListener(TimerEvent.TIMER,onTick);
 			_stepTimer.start();
+			this.addEventListener(TRIGGER_CONTACT, onContact);
 		}
 		
 		private function onTick(e:TimerEvent):void {
 			
 			if(!_paused){
+				if(_hitExit){
+					this._stepTimer.stop();
+					MovieClip(parent).removeChild(dbg.GetSprite());
+					start();
+					MovieClip(parent.parent).nextFrame();
+				}
 				_world.ClearForces();
 				_world.Step(stepTime,10,10);
 				this.dispatchEvent(new Event(TICK_WORLD));
 			}
 			
+			/*if(parent == null || MovieClip(parent).currentFrame != _currentFrame){
+				start();
+			}*/
 			/*for (var i:int = 0; i < this.numChildren; i++){
 				var s:DisplayObject = this.getChildAt(i);
 				if(s is PhysObj) {
@@ -120,6 +138,15 @@
 			_wasQDown = Keyboarder.keyIsDown(Keyboard.Q);
 			if(DEBUG) _world.DrawDebugData();
 			else dbg.GetSprite().graphics.clear();
+		}
+
+		//For handling collisions with the exit door
+		private var _hitExit:Boolean = false;
+		private function onContact(e:ContactEvent):void{
+			if(e.triggerID == "exit" && !_hitExit){
+				com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText("You did it!");
+				_hitExit = true;
+			}
 		}
 		
 		public function pause():void { _paused = true; }
