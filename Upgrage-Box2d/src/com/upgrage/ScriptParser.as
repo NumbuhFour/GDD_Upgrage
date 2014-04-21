@@ -2,6 +2,7 @@
 	
 	import flash.net.*;
 	import flash.events.*
+	import flash.errors.IOError;
 	
 	public class ScriptParser {
 
@@ -42,8 +43,11 @@
 			trace("PEINS");
 			_loader = new URLLoader();
 			trace("CANS");
-			_loader.addEventListener(Event.COMPLETE,onLoadScript,false,0,true);
+			_loader.addEventListener(Event.COMPLETE,onLoadScript);
+			_loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+			path = path.substring(0, path.lastIndexOf("t")+1);			
 			var request:URLRequest = new URLRequest(_PATH + path);
+			
 			_loader.load(request);
 		}
 		
@@ -62,10 +66,15 @@
 				{
 				}
 				_loader.removeEventListener(Event.COMPLETE, onLoadScript);
+				_loader.removeEventListener(IOErrorEvent.IO_ERROR, onIOError);
 				_loader = null;
 			}
 			if (loadCounter < _levels.length)
 				loadScript(_levels[loadCounter++]);
+		}
+		
+		private function onIOError(e:IOErrorEvent){
+			trace(e.text);
 		}
 		
 		public function loadLevel(levelNum:int){
