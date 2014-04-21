@@ -16,20 +16,6 @@
 	
 	
 	public class PPlayer extends PEntity {
-		
-		public static var MAX_SPEED:Number = 7;
-		public static var ACCEL_SPEED_ONGROUND:Number = 1.2; 
-		public static var ACCEL_SPEED_INAIR:Number = 0.7;
-		public static var DASH_SPEED:Number = 20;
-		public static var JUMP_FORCE:Number = 9.2;
-		public static var MID_AIR_JUMPS:Number = 1;
-		public static var HORIZONTAL_DAMPENING_ONGROUND = 0.8; //Friction on ground
-		public static var HORIZONTAL_DAMPENING_INAIR = 0.03; //Friction in air
-		public static var WALL_SLIDE_DURATION = 20;
-		public static var DASH_LENGTH = 20;
-		public static var WALL_JUMP_UP_PERCENTAGE = 0.7; //When jumping off a wall, jump upwards with a force of x*JUMP_FORCE
-		public static var WALL_JUMP_OUT_PERCENTAGE = 2; //When jumping off a wall, jump off from the wall with a force of x*ACCEL_SPEED_ONGROUND
-		
 		//Dictionary of Upgrades
 		private var _upgrades:Dictionary;
 		public function get Upgrades():Dictionary { return _upgrades; }
@@ -82,6 +68,35 @@
 		private var _dashLockY:Number = 0; //Y position to set player while locked
 		
 		public function PPlayer() {
+			_upgrades = new Dictionary();
+			initProperties();
+		}
+		
+		private function initProperties(){
+			_upgrades["max speed"] = 7;
+			_upgrades["accel speed onground"] = 1.2;
+			_upgrades["accel speed inair"] = 0.7;
+			_upgrades["dash speed"] = 20;
+			_upgrades["jump force"] = 9.2;
+			_upgrades["mid air jumps"] = 1;
+			_upgrades["horizontal dampening onground"] = 0.8; //Friction on ground
+			_upgrades["horizontal dampening inair"] = 0.03; //Friction in air
+			_upgrades["wall slide duration"] = 20;
+			_upgrades["dash length"] = 20;
+			_upgrades["wall jump up percentage"] = 0.7;//When jumping off a wall, jump upwards with a force of x*_upgrades["jump force"]
+			_upgrades["wall jump out percentage"] = 2; //When jumping off a wall, jump off from the wall with a force of x*_upgrades["accel speed onground"]
+		/*public static var _upgrades["max speed"]:Number = 7;
+		public static var _upgrades["accel speed onground"]:Number = 1.2; 
+		public static var _upgrades["accel speed inair"]:Number = 0.7;
+		public static var _upgrades["dash speed"]:Number = 20;
+		public static var _upgrades["jump force"]:Number = 9.2;
+		public static var _upgrades["mid air jumps"]:Number = 1;
+		public static var _upgrades["horizontal dampening onground"] = 0.8;
+		public static var _upgrades["horizontal dampening inair"] = 0.03;
+		public static var _upgrades["wall slide duration"] = 20;
+		public static var _upgrades["dash length"] = 20;
+		public static var _upgrades["wall jump up percentage"] = 0.7; 
+		public static var _upgrades["wall jump out percentage"] = 2;*/
 		}
 		
 		protected override function updateSelfToGraphics():void {
@@ -122,20 +137,20 @@
 		private function takeInput():void{
 			var currentSpeedSq:Number = _body.GetLinearVelocity().LengthSquared();
 			
-			if(_kRight && !_hitRight && currentSpeedSq < MAX_SPEED*MAX_SPEED){
-				_body.ApplyImpulse(new b2Vec2((_hitBelow ? ACCEL_SPEED_ONGROUND:ACCEL_SPEED_INAIR)*_body.GetMass(),0),new b2Vec2());
+			if(_kRight && !_hitRight && currentSpeedSq < _upgrades["max speed"]*_upgrades["max speed"]){
+				_body.ApplyImpulse(new b2Vec2((_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])*_body.GetMass(),0),new b2Vec2());
 				
-			}if(_kLeft && !_hitLeft && currentSpeedSq < MAX_SPEED*MAX_SPEED){
-				_body.ApplyImpulse(new b2Vec2(-(_hitBelow ? ACCEL_SPEED_ONGROUND:ACCEL_SPEED_INAIR)*_body.GetMass(),0),new b2Vec2());
+			}if(_kLeft && !_hitLeft && currentSpeedSq < _upgrades["max speed"]*_upgrades["max speed"]){
+				_body.ApplyImpulse(new b2Vec2(-(_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])*_body.GetMass(),0),new b2Vec2());
 				
 			}if(_kUp){
 				if(this._isOnWall/*TODO && _canJumpAgain*/){ //Wall jump
-					var jumpOff:Number = JUMP_FORCE*WALL_JUMP_UP_PERCENTAGE;
+					var jumpOff:Number = _upgrades["jump force"]*_upgrades["wall jump up percentage"];
 					var pushOff:Number = 0;
 					if(_hitLeft){
-						pushOff = ACCEL_SPEED_ONGROUND*WALL_JUMP_OUT_PERCENTAGE;
+						pushOff = _upgrades["accel speed onground"]*_upgrades["wall jump out percentage"];
 					}else if(_hitRight){
-						pushOff = -ACCEL_SPEED_ONGROUND*WALL_JUMP_OUT_PERCENTAGE;
+						pushOff = -_upgrades["accel speed onground"]*_upgrades["wall jump out percentage"];
 					}
 					_body.ApplyImpulse(new b2Vec2(pushOff*_body.GetMass(),-jumpOff*_body.GetMass()),_body.GetWorldCenter());
 					this._midAirJumpsLeft = 0;
@@ -143,7 +158,7 @@
 				}else if(_hitBelow || _midAirJumpsLeft > 0){ //jump & double jump
 					var doJump:Boolean = false;
 					if(_hitBelow && this._canJumpAgain) {
-						this._midAirJumpsLeft = PPlayer.MID_AIR_JUMPS;
+						this._midAirJumpsLeft = _upgrades["mid air jumps"];
 						doJump = true;
 					}
 					else if(this._canJumpAgain) {
@@ -154,7 +169,7 @@
 					if(doJump) {
 						var currentVel:b2Vec2 = this._body.GetLinearVelocity();
 						_body.SetLinearVelocity(new b2Vec2(currentVel.x,0)); //Reset speed for jumping (dont want to jump while going down)
-						var jumpForce:Number = JUMP_FORCE;
+						var jumpForce:Number = _upgrades["jump force"];
 						if(!_hitBelow) jumpForce*=0.8; //Cant jump as high second time
 						_body.ApplyImpulse(new b2Vec2(0,-jumpForce*_body.GetMass()),new b2Vec2());
 					}
@@ -164,14 +179,14 @@
 			/*if(_kDashLeft){TODO
 				if(_kDLReleased) {
 					_body.SetLinearVelocity(new b2Vec2()); //Reset speed
-					_body.ApplyImpulse(new b2Vec2(-DASH_SPEED*_body.GetMass(),-2*_body.GetMass()),new b2Vec2());
+					_body.ApplyImpulse(new b2Vec2(-_upgrades["dash speed"]*_body.GetMass(),-2*_body.GetMass()),new b2Vec2());
 				}
 				_kDLReleased = false;
 			}else if(_hitBelow) _kDLReleased = true;
 			if(_kDashRight){
 				if(_kDRReleased) {
 					_body.SetLinearVelocity(new b2Vec2()); //Reset speed
-					_body.ApplyImpulse(new b2Vec2(DASH_SPEED*_body.GetMass(),-2*_body.GetMass()),new b2Vec2());
+					_body.ApplyImpulse(new b2Vec2(_upgrades["dash speed"]*_body.GetMass(),-2*_body.GetMass()),new b2Vec2());
 				}
 				_kDRReleased = false;
 			}else if(_hitBelow) _kDRReleased = true;*/
@@ -182,7 +197,7 @@
 		private function applyHorizontalDrag():void {
 			var horizSpeed = _body.GetLinearVelocity().x;
 			var dragVec:b2Vec2 = new b2Vec2(horizSpeed,0);
-			var dragForceMagnitude = -(_hitBelow ? HORIZONTAL_DAMPENING_ONGROUND:HORIZONTAL_DAMPENING_INAIR) * Math.abs(horizSpeed);
+			var dragForceMagnitude = -(_hitBelow ? _upgrades["horizontal dampening onground"]:_upgrades["horizontal dampening inair"]) * Math.abs(horizSpeed);
 			dragVec.Multiply(dragForceMagnitude);
 			_body.ApplyImpulse(dragVec, _body.GetWorldCenter());
 		}

@@ -144,7 +144,7 @@
 		private var _hitExit:Boolean = false;
 		private function onContact(e:ContactEvent):void{
 			if(e.triggerID == "exit" && !_hitExit){
-				com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText("You did it!");
+				com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
 				_hitExit = true;
 			}
 		}
