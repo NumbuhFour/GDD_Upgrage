@@ -12,6 +12,7 @@
 	import Box2D.Collision.Shapes.b2PolygonShape;
 	import Box2D.Dynamics.b2FixtureDef;
 	import Box2D.Dynamics.Contacts.b2Contact;
+	import flash.utils.Dictionary;
 	
 	
 	public class PPlayer extends PEntity {
@@ -28,6 +29,10 @@
 		public static var DASH_LENGTH = 20;
 		public static var WALL_JUMP_UP_PERCENTAGE = 0.7; //When jumping off a wall, jump upwards with a force of x*JUMP_FORCE
 		public static var WALL_JUMP_OUT_PERCENTAGE = 2; //When jumping off a wall, jump off from the wall with a force of x*ACCEL_SPEED_ONGROUND
+		
+		//Dictionary of Upgrades
+		private var _upgrades:Dictionary;
+		public function get Upgrades():Dictionary { return _upgrades; }
 		
 		//Body
 		private var _torsoShape:b2Shape;
