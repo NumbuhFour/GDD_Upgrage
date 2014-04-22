@@ -13,6 +13,7 @@
 	import flash.display.Sprite;
 	import flash.display.Graphics;
 	import com.upgrage.DialogBox;
+	import com.upgrage.ScriptEvent;
 	
 	public class PhysicsWorld extends MovieClip{
 		
@@ -22,6 +23,7 @@
 		public static var DEBUG:Boolean = true;
 		private var _wasQDown:Boolean = false;
 		private var dbg:b2DebugDraw;
+		private var level:uint;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -39,9 +41,33 @@
 		
 		private function start():void{
 			_world = new b2World(new b2Vec2(0,10), true);
+			loadScripts();
 			_collisionHandler = new CollisionHandler(this);
 			_world.SetContactListener(_collisionHandler);
 			this.addEventListener(Event.ADDED_TO_STAGE, onAdded);
+		}
+		
+		private function loadScripts(){
+			var scripts:Vector.<ScriptEvent> = ScriptParser.parser.loadNextLevel();
+			for (var i=0; i < scripts.length; i++){
+				var trigger:PTrigger = parent.getChildByName(scripts[i].TriggerID);
+				trigger.Command = scripts[i].Command;
+				switch(scripts[i].ScriptType){
+					case 1: trigger.addEventListener(TRIGGER_CONTACT, pushDialog);
+						break;
+					case 2: trigger.addEventListener(TRIGGER_CONTACT, nextLevel);
+						break;
+					case 3: trigger.addEventListener(TRIGGER_CONTACT, upgrade);
+						break;
+					case 4: trigger.addEventListener(TRIGGER_CONTACT, spawnIguanas);
+						break;
+					case 5: trigger.addEventListener(TRIGGER_CONTACT, cutscene);
+						break;
+					default: trace("invalid command type");
+				}
+				
+			}
+			
 		}
 		
 		private function onAdded(e:Event):void {
@@ -147,6 +173,26 @@
 				com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText("You did it!");
 				_hitExit = true;
 			}
+		}
+		
+		private function pushDialog(e:Event){
+			com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(e.target.Command);
+		}
+		
+		private function levelComplete(e:Event){
+			_hitExit = true;
+		}
+		
+		private function upgrade(e:Event){
+			trace("upgrade");
+		}
+		
+		private function spawnIguanas(e:Event){
+			trace("spawn iguanas");
+		}
+		
+		private function cutscene(E:Event){
+			trace("cutscene");
 		}
 		
 		public function pause():void { _paused = true; }
