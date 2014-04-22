@@ -15,8 +15,10 @@
 		private var _world:PhysicsWorld;
 		
 		public function DialogBox() {
-			_world = PhysicsWorld(parent.getChildByName("world"));
+
 			_vector = new Vector.<String>();
+
+			_world = PhysicsWorld(parent);
 		}
 		
 		private var _spaceDown:Boolean = false;

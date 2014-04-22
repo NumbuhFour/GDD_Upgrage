@@ -16,20 +16,6 @@
 	
 	
 	public class PPlayer extends PEntity {
-		
-		public static var MAX_SPEED:Number = 7;
-		public static var ACCEL_SPEED_ONGROUND:Number = 1.2; 
-		public static var ACCEL_SPEED_INAIR:Number = 0.7;
-		public static var DASH_SPEED:Number = 20;
-		public static var JUMP_FORCE:Number = 9.2;
-		public static var MID_AIR_JUMPS:Number = 1;
-		public static var HORIZONTAL_DAMPENING_ONGROUND = 0.8; //Friction on ground
-		public static var HORIZONTAL_DAMPENING_INAIR = 0.03; //Friction in air
-		public static var WALL_SLIDE_DURATION = 20;
-		public static var DASH_LENGTH = 20;
-		public static var WALL_JUMP_UP_PERCENTAGE = 0.7; //When jumping off a wall, jump upwards with a force of x*JUMP_FORCE
-		public static var WALL_JUMP_OUT_PERCENTAGE = 2; //When jumping off a wall, jump off from the wall with a force of x*ACCEL_SPEED_ONGROUND
-		
 		//Dictionary of Upgrades
 		private var _upgrades:Dictionary;
 		public function get Upgrades():Dictionary { return _upgrades; }
@@ -65,6 +51,7 @@
 		private var _kRight:Boolean = false;
 		private var _kUp:Boolean = false;
 		private var _kDown:Boolean = false;
+		private var _kSpace:Boolean = false;
 		private var _kDashLeft:Boolean = false;
 		private var _kDashRight:Boolean = false;
 		
@@ -81,7 +68,30 @@
 		private var _dashCountdown:Number = 0;
 		private var _dashLockY:Number = 0; //Y position to set player while locked
 		
+		private var _animState:String = "idle";
+		
 		public function PPlayer() {
+			_upgrades = new Dictionary();
+			initProperties();
+		}
+		
+		private function initProperties(){
+			_upgrades["max speed"] = 7;
+			_upgrades["accel speed onground"] = 1.2;
+			_upgrades["accel speed inair"] = 0.7;
+			_upgrades["dash speed"] = 20;
+			_upgrades["jump force"] = 9.2;
+			_upgrades["mid air jumps"] = 1;
+			_upgrades["horizontal dampening onground"] = 0.8; //Friction on ground
+			_upgrades["horizontal dampening inair"] = 0.03; //Friction in air
+			_upgrades["wall slide duration"] = 20;
+			_upgrades["dash length"] = 20;
+			_upgrades["wall jump up percentage"] = 0.7;//When jumping off a wall, jump upwards with a force of x*_upgrades["jump force"]
+			_upgrades["wall jump out percentage"] = 2; //When jumping off a wall, jump off from the wall with a force of x*_upgrades["accel speed onground"]
+			
+			_upgrades["jetpack"] = true;
+			_upgrades["jetpack accel"] = 2.5;
+			_upgrades["max jetpack speed"] = 7.3;
 		}
 		
 		protected override function updateSelfToGraphics():void {
@@ -109,6 +119,7 @@
 			_kRight = Keyboarder.keyIsDown(Keyboard.D) || Keyboarder.keyIsDown(Keyboard.RIGHT);
 			_kUp = Keyboarder.keyIsDown(Keyboard.W) || Keyboarder.keyIsDown(Keyboard.UP);
 			_kDown = Keyboarder.keyIsDown(Keyboard.S) || Keyboarder.keyIsDown(Keyboard.DOWN);
+			_kSpace = Keyboarder.keyIsDown(Keyboard.SPACE);
 			_kDashLeft = Keyboarder.keyIsDown(Keyboard.Q);
 			_kDashRight = Keyboarder.keyIsDown(Keyboard.E);
 			
@@ -117,33 +128,51 @@
 			wallSlide();
 			
 			takeInput();
+			
+			cleanAnimations();
 		}
 		
 		private function takeInput():void{
 			var currentSpeedSq:Number = _body.GetLinearVelocity().LengthSquared();
 			
-			if(_kRight && !_hitRight && currentSpeedSq < MAX_SPEED*MAX_SPEED){
-				_body.ApplyImpulse(new b2Vec2((_hitBelow ? ACCEL_SPEED_ONGROUND:ACCEL_SPEED_INAIR)*_body.GetMass(),0),new b2Vec2());
-				
-			}if(_kLeft && !_hitLeft && currentSpeedSq < MAX_SPEED*MAX_SPEED){
-				_body.ApplyImpulse(new b2Vec2(-(_hitBelow ? ACCEL_SPEED_ONGROUND:ACCEL_SPEED_INAIR)*_body.GetMass(),0),new b2Vec2());
-				
-			}if(_kUp){
-				if(this._isOnWall/*TODO && _canJumpAgain*/){ //Wall jump
-					var jumpOff:Number = JUMP_FORCE*WALL_JUMP_UP_PERCENTAGE;
+			if(_kRight && !_hitRight && currentSpeedSq < _upgrades["max speed"]*_upgrades["max speed"]){
+				_body.ApplyImpulse(new b2Vec2((_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])*_body.GetMass(),0),new b2Vec2());
+				if(this._animState != "run" && _hitBelow) {
+					this.followingObject.gotoAndPlay("run");
+					this._animState = "run";
+				}
+				this.followingObject.scaleX = Math.abs(this.followingObject.scaleX);//Flip player
+			}if(_kLeft && !_hitLeft && currentSpeedSq < _upgrades["max speed"]*_upgrades["max speed"]){
+				_body.ApplyImpulse(new b2Vec2(-(_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])*_body.GetMass(),0),new b2Vec2());
+				if(this._animState != "run" && _hitBelow) {
+					this.followingObject.gotoAndPlay("run");
+					this._animState = "run";
+				}
+				this.followingObject.scaleX = -Math.abs(this.followingObject.scaleX);//Flip player
+			}
+			if(this._isOnWall){ //Jump Off Wall
+				if(_kUp || (_hitLeft && _kRight) || (_hitRight && _kLeft)){ //Jump when up is pressed or when key pressed is opposite of wall direction
+					var jumpOff:Number = _upgrades["jump force"]*_upgrades["wall jump up percentage"];
 					var pushOff:Number = 0;
 					if(_hitLeft){
-						pushOff = ACCEL_SPEED_ONGROUND*WALL_JUMP_OUT_PERCENTAGE;
+						pushOff = _upgrades["accel speed onground"]*_upgrades["wall jump out percentage"];
+						this.followingObject.scaleX = Math.abs(this.followingObject.scaleX);//Flip player
 					}else if(_hitRight){
-						pushOff = -ACCEL_SPEED_ONGROUND*WALL_JUMP_OUT_PERCENTAGE;
+						pushOff = -_upgrades["accel speed onground"]*_upgrades["wall jump out percentage"];
+						this.followingObject.scaleX = -Math.abs(this.followingObject.scaleX);//Flip player
 					}
 					_body.ApplyImpulse(new b2Vec2(pushOff*_body.GetMass(),-jumpOff*_body.GetMass()),_body.GetWorldCenter());
 					this._midAirJumpsLeft = 0;
 					this._isOnWall = false;	
-				}else if(_hitBelow || _midAirJumpsLeft > 0){ //jump & double jump
+					if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
+					this._animState = "jump";
+				}
+			}else if(_kUp){ //jump & double jump
+				//var jetpack:Boolean = _upgrades["jetpack"];
+				if(/* !jetpack && */(_hitBelow || _midAirJumpsLeft > 0)){
 					var doJump:Boolean = false;
 					if(_hitBelow && this._canJumpAgain) {
-						this._midAirJumpsLeft = PPlayer.MID_AIR_JUMPS;
+						this._midAirJumpsLeft = _upgrades["mid air jumps"];
 						doJump = true;
 					}
 					else if(this._canJumpAgain) {
@@ -154,24 +183,32 @@
 					if(doJump) {
 						var currentVel:b2Vec2 = this._body.GetLinearVelocity();
 						_body.SetLinearVelocity(new b2Vec2(currentVel.x,0)); //Reset speed for jumping (dont want to jump while going down)
-						var jumpForce:Number = JUMP_FORCE;
+						var jumpForce:Number = _upgrades["jump force"];
 						if(!_hitBelow) jumpForce*=0.8; //Cant jump as high second time
 						_body.ApplyImpulse(new b2Vec2(0,-jumpForce*_body.GetMass()),new b2Vec2());
+						if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
+						this._animState = "jump";
 					}
+					this._canJumpAgain = false;
 				}
-				this._canJumpAgain = false;
+			}
+			
+			if(_upgrades["jetpack"] && _kSpace && _body.GetLinearVelocity().y >-_upgrades["max jetpack speed"]){ //JETPACK
+				_body.ApplyImpulse(new b2Vec2(0,-_upgrades["jetpack accel"]*_body.GetMass()), _body.GetWorldCenter());
+				if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
+				this._animState = "jump";
 			}
 			/*if(_kDashLeft){TODO
 				if(_kDLReleased) {
 					_body.SetLinearVelocity(new b2Vec2()); //Reset speed
-					_body.ApplyImpulse(new b2Vec2(-DASH_SPEED*_body.GetMass(),-2*_body.GetMass()),new b2Vec2());
+					_body.ApplyImpulse(new b2Vec2(-_upgrades["dash speed"]*_body.GetMass(),-2*_body.GetMass()),new b2Vec2());
 				}
 				_kDLReleased = false;
 			}else if(_hitBelow) _kDLReleased = true;
 			if(_kDashRight){
 				if(_kDRReleased) {
 					_body.SetLinearVelocity(new b2Vec2()); //Reset speed
-					_body.ApplyImpulse(new b2Vec2(DASH_SPEED*_body.GetMass(),-2*_body.GetMass()),new b2Vec2());
+					_body.ApplyImpulse(new b2Vec2(_upgrades["dash speed"]*_body.GetMass(),-2*_body.GetMass()),new b2Vec2());
 				}
 				_kDRReleased = false;
 			}else if(_hitBelow) _kDRReleased = true;*/
@@ -179,17 +216,38 @@
 			if(!_kUp) this._canJumpAgain = true;
 		}
 		
+		private function cleanAnimations():void{
+						
+			//Setting animation to idle when idle
+			if(this._animState != "idle" && _hitBelow && !_kLeft && !_kRight && this._body.GetLinearVelocity().LengthSquared() < 10){
+				this.followingObject.gotoAndPlay("idle");
+				this._animState = "idle";
+			}
+
+			//Setting animatino to fall when falling
+			if(this._animState != "fall" && !_hitBelow && this._body.GetLinearVelocity().y > 1){
+				this.followingObject.gotoAndPlay("fall");
+				this._animState = "fall";
+			}
+			
+			//Setting animation to wallslide while on wall
+			if(this._animState != "wall" && this._isOnWall){
+				this.followingObject.gotoAndPlay("wall");
+				this._animState = "wall";
+			}
+		}
+		
 		private function applyHorizontalDrag():void {
 			var horizSpeed = _body.GetLinearVelocity().x;
 			var dragVec:b2Vec2 = new b2Vec2(horizSpeed,0);
-			var dragForceMagnitude = -(_hitBelow ? HORIZONTAL_DAMPENING_ONGROUND:HORIZONTAL_DAMPENING_INAIR) * Math.abs(horizSpeed);
+			var dragForceMagnitude = -(_hitBelow ? _upgrades["horizontal dampening onground"]:_upgrades["horizontal dampening inair"]) * Math.abs(horizSpeed);
 			dragVec.Multiply(dragForceMagnitude);
 			_body.ApplyImpulse(dragVec, _body.GetWorldCenter());
 		}
 
 		//Manages input for wallsliding
 		private function wallSlide():void{
-			if((_hitLeft || _hitRight) && !_hitBelow && _canWallSlide){
+			if(((_hitLeft && _kLeft) || (_hitRight && _kRight)) && !_hitBelow && _canWallSlide){
 				var vertSpeed = _body.GetLinearVelocity().y;
 				var dragVec:b2Vec2 = new b2Vec2(0,vertSpeed);
 				var dragForceMagnitude = -0.87 * Math.abs(vertSpeed);
@@ -204,8 +262,19 @@
 				}
 				this._isOnWall = true;
 				this._onWallTime --;
+				
+				
+				if(_hitLeft){
+					this.followingObject.scaleX = Math.abs(this.followingObject.scaleX);//Flip player
+				}else if(_hitRight){
+					this.followingObject.scaleX = -Math.abs(this.followingObject.scaleX);//Flip player
+				}
 			}else{
 				this._isOnWall = false;
+				if(this._animState == "wall"){
+					this.followingObject.gotoAndPlay("fall");
+					this._animState = "fall";
+				}
 			}
 			if(_hitBelow) _canWallSlide = true;
 		}
@@ -253,14 +322,14 @@
 			this._feetSenFix = _body.CreateFixture(feetSenFixDef);
 			
 			_leftSenShape = new b2PolygonShape();
-			_leftSenShape.SetAsOrientedBox(senWid,hei/2*senShrink/4,new b2Vec2(-wid/2-senWid,0));
+			_leftSenShape.SetAsOrientedBox(senWid,hei/2*senShrink/1.5,new b2Vec2(-wid/2-senWid,0));
 			var leftSenFixDef:b2FixtureDef = new b2FixtureDef();
 			leftSenFixDef.shape = _leftSenShape;
 			leftSenFixDef.isSensor = true;
 			this._leftSenFix = _body.CreateFixture(leftSenFixDef);
 			
 			_rightSenShape = new b2PolygonShape();
-			_rightSenShape.SetAsOrientedBox(senWid,hei/2*senShrink/4,new b2Vec2(wid/2+senWid,0));
+			_rightSenShape.SetAsOrientedBox(senWid,hei/2*senShrink/1.5,new b2Vec2(wid/2+senWid,0));
 			var rightSenFixDef:b2FixtureDef = new b2FixtureDef();
 			rightSenFixDef.shape = _rightSenShape;
 			rightSenFixDef.isSensor = true;
