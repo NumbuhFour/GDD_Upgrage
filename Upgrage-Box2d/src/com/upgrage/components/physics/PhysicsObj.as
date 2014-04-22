@@ -131,6 +131,9 @@
 			this._world.addEventListener(PhysicsWorld.DONE_LOADING,setup);
 		}
 		
+		public function get followingObject():MovieClip{
+			return this._followingObject;
+		}
 		
 		// Draw object's physical shape boundaries (abstract)
 		protected function drawBounds():void {}

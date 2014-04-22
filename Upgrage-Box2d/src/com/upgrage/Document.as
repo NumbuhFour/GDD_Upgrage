@@ -4,6 +4,9 @@
 	import com.as3toolkit.ui.Keyboarder;
 	import flash.events.MouseEvent;
 	import flash.events.Event;
+	import flash.events.KeyboardEvent;
+	import com.as3toolkit.events.KeyboarderEvent;
+	import flash.ui.Keyboard;
 	
 	public class Document extends MovieClip {
 		
@@ -14,8 +17,14 @@
 			ScriptParser.parser.loadScripts("levels.txt");
 			//this.addEventListener(Event.ENTER_FRAME,onAdded);
 			//this.addEventListener(Event.EXIT_FRAME,onRemove);
+			stage.addEventListener(KeyboardEvent.KEY_UP, onKey_Up);
 		}
 		
+		private function onKey_Up(e:KeyboardEvent){
+			if(e.keyCode == Keyboard.ESCAPE){
+				this.gotoAndStop("menu");
+			}
+		}		
 		/*private function onAdded(e:Event):void{
 			//this.removeEventListener(Event.ADDED_TO_STAGE, onAdded);
 			if(!setup){
