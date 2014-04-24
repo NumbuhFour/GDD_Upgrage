@@ -11,6 +11,7 @@
 		private var _triggerID:String = "default";
 		private var _command:String;
 		public function get Command():String { return _command; }
+		public function set Command(comm:String) { _command = comm; }
 		
 		public function PTrigger() {
 		}

@@ -12,8 +12,7 @@
 	import flash.ui.Keyboard;
 	import flash.display.Sprite;
 	import flash.display.Graphics;
-	import com.upgrage.DialogBox;
-	import com.upgrage.ScriptEvent;
+	import com.upgrage.*;
 	
 	public class PhysicsWorld extends MovieClip{
 		
@@ -50,12 +49,12 @@
 		private function loadScripts(){
 			var scripts:Vector.<ScriptEvent> = ScriptParser.parser.loadNextLevel();
 			for (var i=0; i < scripts.length; i++){
-				var trigger:PTrigger = parent.getChildByName(scripts[i].TriggerID);
+				var trigger:PTrigger = (parent.getChildByName(scripts[i].TriggerID) as PTrigger);
 				trigger.Command = scripts[i].Command;
 				switch(scripts[i].ScriptType){
 					case 1: trigger.addEventListener(TRIGGER_CONTACT, pushDialog);
 						break;
-					case 2: trigger.addEventListener(TRIGGER_CONTACT, nextLevel);
+					case 2: trigger.addEventListener(TRIGGER_CONTACT, levelComplete);
 						break;
 					case 3: trigger.addEventListener(TRIGGER_CONTACT, upgrade);
 						break;
@@ -187,7 +186,7 @@
 		private function upgrade(e:Event){
 			var arr:Array = e.target.Command.split(" ");
 			//com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(arr[1]);
-			(parent.getChildByName("player") as PPlayer).Upgrades[arr[0]] = arr[1];
+			(parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]] = arr[1];
 			trace("upgrade");
 		}
 		

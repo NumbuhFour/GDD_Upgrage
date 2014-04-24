@@ -21,7 +21,7 @@
 		public function ScriptEvent(data:String) {
 			_triggerID = data.substring(0, data.indexOf(":"));
 			_scriptType = (data.substr(data.indexOf(":") + 2, 1)as int); 
-			_command = data.substring(data.lastIndexOf(":") + 2, data.length-1);
+			_command = data.substring(data.lastIndexOf(":") + 1, data.length-1);
 			trace("TriggerID: " + _triggerID + "\tType: " + _scriptType + "\tCommand: " + _command);
 		}
 		

@@ -56,7 +56,7 @@
 		private function onLoadScript(e:Event){
 			//var arr:Array = e.target.data.split("\n");
 			var allScripts:Array = e.target.data.split("\n");
-			var vector:Vector.<ScriptEvent>
+			var vector:Vector.<ScriptEvent> = new Vector.<ScriptEvent>();
 			for each(var script:String in allScripts){
 				vector.push(new ScriptEvent(script.substr(0, script.length-3)))
 			}
@@ -83,7 +83,7 @@
 			trace(e.text);
 		}
 		
-		public function loadNewLevel(){
+		public function loadNextLevel(){
 			return _scripts[_currLevel++];
 		}
 		
