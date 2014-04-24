@@ -60,8 +60,10 @@
 		private var _midAirJumpsLeft:Number = 0;
 		private var _canJumpAgain:Boolean = true; //Tracks if the player can press the jump key again (it needs to be released first)
 		private var _isOnWall:Boolean = false;
+		private var _wasOnWall:Boolean = false;
 		private var _onWallTime:Number = 0;
 		private var _canWallSlide:Boolean = true;
+		private var _canWallJump:Boolean = false;
 		
 		private var _kDLReleased:Boolean = true; //DashKey Left released
 		private var _kDRReleased:Boolean = true; //DashKey Left released
@@ -92,6 +94,10 @@
 			_upgrades["jetpack"] = true;
 			_upgrades["jetpack accel"] = 2.5;
 			_upgrades["max jetpack speed"] = 7.3;
+			
+			_upgrades["wall jump"] = true;
+			_upgrades["wall slide"] = true;
+			_upgrades["jump"] = true;
 		}
 		
 		protected override function updateSelfToGraphics():void {
@@ -137,21 +143,21 @@
 			
 			if(_kRight && !_hitRight && currentSpeedSq < _upgrades["max speed"]*_upgrades["max speed"]){
 				_body.ApplyImpulse(new b2Vec2((_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])*_body.GetMass(),0),new b2Vec2());
-				if(this._animState != "run" && _hitBelow) {
+				if(this._animState != "run" && _hitBelow && !_hitLeft) {
 					this.followingObject.gotoAndPlay("run");
 					this._animState = "run";
 				}
-				this.followingObject.scaleX = Math.abs(this.followingObject.scaleX);//Flip player
+				if(!_hitLeft) this.followingObject.scaleX = Math.abs(this.followingObject.scaleX);//Flip player
 			}if(_kLeft && !_hitLeft && currentSpeedSq < _upgrades["max speed"]*_upgrades["max speed"]){
 				_body.ApplyImpulse(new b2Vec2(-(_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])*_body.GetMass(),0),new b2Vec2());
-				if(this._animState != "run" && _hitBelow) {
+				if(this._animState != "run" && _hitBelow && !_hitRight) {
 					this.followingObject.gotoAndPlay("run");
 					this._animState = "run";
 				}
-				this.followingObject.scaleX = -Math.abs(this.followingObject.scaleX);//Flip player
+				if(!_hitRight) this.followingObject.scaleX = -Math.abs(this.followingObject.scaleX);//Flip player
 			}
-			if(this._isOnWall){ //Jump Off Wall
-				if(_kUp || (_hitLeft && _kRight) || (_hitRight && _kLeft)){ //Jump when up is pressed or when key pressed is opposite of wall direction
+			if(this._isOnWall && _upgrades["wall jump"] ){ //Jump Off Wall
+				if((_kUp && _canWallJump) || (_hitLeft && _kRight) || (_hitRight && _kLeft)){ //Jump when up is pressed or when key pressed is opposite of wall direction
 					var jumpOff:Number = _upgrades["jump force"]*_upgrades["wall jump up percentage"];
 					var pushOff:Number = 0;
 					if(_hitLeft){
@@ -164,10 +170,11 @@
 					_body.ApplyImpulse(new b2Vec2(pushOff*_body.GetMass(),-jumpOff*_body.GetMass()),_body.GetWorldCenter());
 					this._midAirJumpsLeft = 0;
 					this._isOnWall = false;	
+					this._canWallJump = false;
 					if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
 					this._animState = "jump";
 				}
-			}else if(_kUp){ //jump & double jump
+			}else if(_kUp && _upgrades["jump"] ){ //jump & double jump
 				//var jetpack:Boolean = _upgrades["jetpack"];
 				if(/* !jetpack && */(_hitBelow || _midAirJumpsLeft > 0)){
 					var doJump:Boolean = false;
@@ -214,6 +221,8 @@
 			}else if(_hitBelow) _kDRReleased = true;*/
 			
 			if(!_kUp) this._canJumpAgain = true;
+			this._canWallJump = this._wasOnWall && !_kUp && !_hitBelow; //You have to let go of the up key at least once before jumping off wall
+			this._wasOnWall = this._isOnWall;
 		}
 		
 		private function cleanAnimations():void{
@@ -235,6 +244,11 @@
 				this.followingObject.gotoAndPlay("wall");
 				this._animState = "wall";
 			}
+			
+			if(this._animState == "run" && _kLeft == _kRight){
+				this._animState = "idle";
+				this.followingObject.gotoAndPlay("idle");
+			}
 		}
 		
 		private function applyHorizontalDrag():void {
@@ -247,18 +261,20 @@
 
 		//Manages input for wallsliding
 		private function wallSlide():void{
-			if(((_hitLeft && _kLeft) || (_hitRight && _kRight)) && !_hitBelow && _canWallSlide){
-				var vertSpeed = _body.GetLinearVelocity().y;
-				var dragVec:b2Vec2 = new b2Vec2(0,vertSpeed);
-				var dragForceMagnitude = -0.87 * Math.abs(vertSpeed);
-				dragVec.Multiply(dragForceMagnitude);
-				_body.ApplyImpulse(dragVec, _body.GetWorldCenter());
+			if(this._upgrades["wall slide"] && (((_hitLeft && _kLeft) || (_hitRight && _kRight)) && !_hitBelow && _canWallSlide)){ //On wall, pressing key
+				var vertSpeed:Number = _body.GetLinearVelocity().y;
+				if(vertSpeed > 0){ //Must be going down to apply force down
+					/*var dragVec:b2Vec2 = new b2Vec2(0,vertSpeed);
+					var dragForceMagnitude = -0.87 * Math.abs(vertSpeed);
+					dragVec.Multiply(dragForceMagnitude);
+					_body.ApplyImpulse(dragVec, _body.GetWorldCenter());*/
 
-				//Push onto wall
-				if(!((_hitLeft && _kRight) || (_hitRight && _kLeft))){
-					var push:Number = 0.4*_body.GetMass();
-					if(_hitLeft) push *= -1;
-					_body.ApplyImpulse(new b2Vec2(push,0),_body.GetWorldCenter());
+					//Push onto wall
+					/*if(!((_hitLeft && _kRight) || (_hitRight && _kLeft))){
+						var push:Number = 0.4*_body.GetMass();
+						if(_hitLeft) push *= -1;
+						_body.ApplyImpulse(new b2Vec2(push,0),_body.GetWorldCenter());
+					}*/
 				}
 				this._isOnWall = true;
 				this._onWallTime --;

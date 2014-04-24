@@ -33,6 +33,8 @@
 		protected var _shape:b2Shape;
 		protected var _fixtureDef:b2FixtureDef;
 		protected var _fixture:b2Fixture;
+		
+		protected var _gravity:b2Vec2 = PhysicsWorld.DEFAULT_GRAVITY;
 
 		protected var _world:PhysicsWorld = null;
 		public function PhysicsObj() {
@@ -54,6 +56,7 @@
 			_body.SetAngle(rotTemp*(Math.PI/180));
 			
 			_world.addEventListener(PhysicsWorld.TICK_WORLD,onTick);
+			_world.addEventListener(PhysicsWorld.APPLY_GRAVITY,doGravity);
 			//_fixture = _body.CreateFixture(_fixtureDef); //Should be done by child class as they need to set the shape
 			
 			isStatic = isStatic;
@@ -109,11 +112,22 @@
 			_body.SetAngle(tempRot * (Math.PI/180));
 		}
 		
+		
+		public function doGravity(e:Event):void{
+			//Apply Gravity
+			//var vel:b2Vec2 = _body.GetLinearVelocity();
+			//_body.SetLinearVelocity(new b2Vec2(vel.x + (1/_world.stepTime) * (_gravity.x)*_body.GetMass(), vel.y + (1/_world.stepTime) * (_gravity.y)*_body.GetMass()));
+			//_body.ApplyForce(new b2Vec2(_gravity.x * this._body.GetMass() * (1/_world.stepTime), _gravity.y * this._body.GetMass() * (1/_world.stepTime)),_body.GetWorldCenter());
+			//b.m_linearVelocity.x += (1 / your_time_step) * (gravity.x);
+			//b.m_linearVelocity.y += (1 / your_time_step) * (gravity.y);
+		}
 		public function onTick(e:Event):void{
+			
 			var pos:b2Vec2 = _body.GetPosition();
 			this.x = pos.x*_world.pscale;
 			this.y = pos.y*_world.pscale;
 			
+			//Move accompanying sprite
 			this.rotation = _body.GetAngle()*(180/Math.PI);
 			
 			if(_followingObject != null){
@@ -134,6 +148,9 @@
 		public function get followingObject():MovieClip{
 			return this._followingObject;
 		}
+
+		public function set gravity(grav:b2Vec2):void { this._gravity = grav; }
+		public function get gravity():b2Vec2 { return this._gravity; }
 		
 		// Draw object's physical shape boundaries (abstract)
 		protected function drawBounds():void {}
@@ -221,6 +238,7 @@
 		public function set followingObjectName(val:String):void{
 			_followingObjectName = val;
 			this._followingObject = parent.getChildByName(_followingObjectName) as MovieClip;
+			//this._followingObject = this._followingObject.duplicateMovieClip("clip-" + _followingObject.name + ":r" + Math.round(Math.random()*1000), parent.numChildren);
 			this.updateSelfToGraphics();
 		}
 		public function get followingObjectName():String { return _followingObjectName; }
