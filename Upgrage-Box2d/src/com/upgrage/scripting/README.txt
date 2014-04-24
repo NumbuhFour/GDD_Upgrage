@@ -5,9 +5,8 @@ upon hitting the jetpack trigger, dialog is called
 jetpackTrigger:1:"Here, you can have this jetpack. It was my daughter's when she was in Nam."
 
 on the same trigger, after the dialog, the jetpack is obtained
-jetpackTrigger:3:set jetpack true;
+jetpackTrigger:3:jetpack true;
 
-all upgrades are controlled with booleans.
 
 TRIGGER TYPES
 1 - Dialog

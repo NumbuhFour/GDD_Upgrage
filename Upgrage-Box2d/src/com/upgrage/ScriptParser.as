@@ -60,7 +60,7 @@
 			for each(var script:String in allScripts){
 				vector.push(new ScriptEvent(script.substr(0, script.length-3)))
 			}
-			_scripts.push(script);
+			_scripts.push(vector);
 			trace(e.target.data);
 			if (_loader != null)
 			{

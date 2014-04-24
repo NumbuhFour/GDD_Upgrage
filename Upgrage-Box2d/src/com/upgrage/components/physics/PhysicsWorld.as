@@ -186,8 +186,8 @@
 		
 		private function upgrade(e:Event){
 			var arr:Array = e.target.Command.split(" ");
-			com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(arr[1]);
-			
+			//com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(arr[1]);
+			(parent.getChildByName("player") as PPlayer).Upgrades[arr[0]] = arr[1];
 			trace("upgrade");
 		}
 		
