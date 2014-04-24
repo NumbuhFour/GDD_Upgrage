@@ -88,7 +88,7 @@
 		}
 		
 		public static function get parser():ScriptParser { return _parser; }
-		public function get scripts():Vector.<ScriptEvent> { return _scripts; }
+		public function get scripts():Vector.<Vector.<ScriptEvent>> { return _scripts; }
 		public function get CurrLevel():uint { return _currLevel; }
 		public function set CurrLevel(val:uint) { _currLevel = val; }
 

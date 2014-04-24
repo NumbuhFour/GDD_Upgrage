@@ -171,7 +171,7 @@
 		private function onContact(e:ContactEvent):void{
 			if(e.triggerID == "exit" && !_hitExit){
 				com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
-				_hitExit = true;
+				//_hitExit = true;
 			}
 		}
 		
@@ -180,10 +180,14 @@
 		}
 		
 		private function levelComplete(e:Event){
+			com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(e.target.Command);
 			_hitExit = true;
 		}
 		
 		private function upgrade(e:Event){
+			var arr:Array = e.target.Command.split(" ");
+			com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(arr[1]);
+			
 			trace("upgrade");
 		}
 		

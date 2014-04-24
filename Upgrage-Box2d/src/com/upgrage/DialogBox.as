@@ -5,18 +5,19 @@
 	import com.as3toolkit.ui.Keyboarder;
 	import flash.ui.Keyboard;
 	import com.upgrage.components.physics.PhysicsWorld;
+	import com.upgrage.util.Queue;
 	
 	
 	public class DialogBox extends MovieClip {
 		
-		private var _vector:Vector.<String>;
+		private var _queue:Queue;
 		private var _text:String = "Hello World";
 		private var _open:Boolean = false;
 		private var _world:PhysicsWorld;
 		
 		public function DialogBox() {
 
-			_vector = new Vector.<String>();
+			_queue = new Queue();
 
 			_world = PhysicsWorld(parent);
 		}
@@ -26,14 +27,15 @@
 			var down:Boolean = Keyboarder.keyIsDown(Keyboard.SPACE);
 			if(down && !_spaceDown){
 				if(_open){
-					if (_vector.length > 0){
-						_text = _vector.pop();
+					if (!_queue.empty){
+						_text = _queue.read();
 						this.innerMC.textMC.text = _text;
 					}
 					else{
 						this.gotoAndStop(0);
 						_world.unpause();
 						this.removeEventListener(Event.ENTER_FRAME, onEnter_Frame);
+						_text = "";
 					}
 				}
 			}
@@ -43,9 +45,10 @@
 		public function pushText(text:String):void{
 			this.addEventListener(Event.ENTER_FRAME, onEnter_Frame);
 			var arr:Array = text.split("\"");
-			for (var i:int = arr.length-1; i >= 0; i--)
-				_vector.push(arr[i]);
-			_text = _vector.pop();
+			for each(var i:String in arr)
+				_queue.write(i);
+			if (_text == "")
+				_text = _queue.read();
 			this.gotoAndStop("show");
 			this.innerMC.textMC.text = _text;
 			_open = true;
