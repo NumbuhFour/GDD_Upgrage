@@ -18,7 +18,11 @@
 		
 		public static const DONE_LOADING:String = "DoneLoadingWorld";
 		public static const TICK_WORLD:String = "TickWorld";
+		public static const APPLY_GRAVITY:String = "DoGravity";
 		public static const TRIGGER_CONTACT:String = "TriggerContact";
+
+		public static const DEFAULT_GRAVITY:b2Vec2 = new b2Vec2(0,10);
+		
 		public static var DEBUG:Boolean = true;
 		private var _wasQDown:Boolean = false;
 		private var dbg:b2DebugDraw;
@@ -39,8 +43,9 @@
 		}
 		
 		private function start():void{
-			_world = new b2World(new b2Vec2(0,10), true);
 			loadScripts();
+
+			_world = new b2World(new b2Vec2(), true);
 			_collisionHandler = new CollisionHandler(this);
 			_world.SetContactListener(_collisionHandler);
 			this.addEventListener(Event.ADDED_TO_STAGE, onAdded);
@@ -115,8 +120,9 @@
 					start();
 					MovieClip(parent.parent).nextFrame();
 				}
-				_world.ClearForces();
+				//_world.ClearForces();
 				_world.Step(stepTime,10,10);
+				this.dispatchEvent(new Event(APPLY_GRAVITY));
 				this.dispatchEvent(new Event(TICK_WORLD));
 			}
 			

@@ -26,6 +26,8 @@ import Box2D.Dynamics.Joints.*;
 import Box2D.Collision.*;
 
 import Box2D.Common.b2internal;
+import com.upgrage.components.physics.PhysicsObj;
+
 use namespace b2internal;
 
 
@@ -176,11 +178,14 @@ public class b2Island
 			
 			if (b.GetType() != b2Body.b2_dynamicBody)
 				continue;
-			
+			var indivGrav:b2Vec2 = gravity;
+			if(b.GetUserData() is com.upgrage.components.physics.PhysicsObj){
+				indivGrav = (b.GetUserData() as com.upgrage.components.physics.PhysicsObj).gravity;
+			}
 			// Integrate velocities.
 			//b.m_linearVelocity += step.dt * (gravity + b.m_invMass * b.m_force);
-			b.m_linearVelocity.x += step.dt * (gravity.x + b.m_invMass * b.m_force.x);
-			b.m_linearVelocity.y += step.dt * (gravity.y + b.m_invMass * b.m_force.y);
+			b.m_linearVelocity.x += step.dt * (indivGrav.x + b.m_invMass * b.m_force.x);
+			b.m_linearVelocity.y += step.dt * (indivGrav.y + b.m_invMass * b.m_force.y);
 			b.m_angularVelocity += step.dt * b.m_invI * b.m_torque;
 			
 			// Apply damping.
