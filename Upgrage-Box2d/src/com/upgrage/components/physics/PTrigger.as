@@ -10,6 +10,10 @@
 		
 		private var _triggerID:String = "default";
 		private var _command:String;
+		private var _disabled:Boolean = false;
+		
+		public function get disabled():Boolean { return _disabled; }
+		public function set disabled(val:Boolean):void { _disabled = val; }
 		public function get Command():String { return _command; }
 		public function set Command(comm:String) { _command = comm; }
 		

@@ -1,1 +1,1 @@
-startTrigger:1:"You seem to be not sucking too bad."
+startTrigger:DIALOG:You seem to be not sucking too bad.

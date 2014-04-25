@@ -58,7 +58,7 @@
 			var allScripts:Array = e.target.data.split("\n");
 			var vector:Vector.<ScriptEvent> = new Vector.<ScriptEvent>();
 			for each(var script:String in allScripts){
-				vector.push(new ScriptEvent(script.substr(0, script.length-3)))
+				vector.push(new ScriptEvent(script.substring(0, script.length)))
 			}
 			_scripts.push(vector);
 			trace(e.target.data);

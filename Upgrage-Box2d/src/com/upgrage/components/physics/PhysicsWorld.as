@@ -6,13 +6,14 @@
 	import flash.events.Event;
 	import flash.utils.Timer;
 	import flash.events.TimerEvent;
-	
+	import com.upgrage.DialogBox;
 	import Box2D.Dynamics.b2DebugDraw;
 	import com.as3toolkit.ui.Keyboarder;
 	import flash.ui.Keyboard;
 	import flash.display.Sprite;
 	import flash.display.Graphics;
 	import com.upgrage.*;
+	import flash.utils.Dictionary;
 	
 	public class PhysicsWorld extends MovieClip{
 		
@@ -27,6 +28,8 @@
 		private var _wasQDown:Boolean = false;
 		private var dbg:b2DebugDraw;
 		private var level:uint;
+		
+		private var _scripts:Vector.<ScriptEvent>;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -43,7 +46,6 @@
 		}
 		
 		private function start():void{
-			loadScripts();
 
 			_world = new b2World(new b2Vec2(), true);
 			_collisionHandler = new CollisionHandler(this);
@@ -52,26 +54,8 @@
 		}
 		
 		private function loadScripts(){
-			var scripts:Vector.<ScriptEvent> = ScriptParser.parser.loadNextLevel();
-			for (var i=0; i < scripts.length; i++){
-				trace(scripts[i].TriggerID + " " + parent.getChildByName(scripts[i].TriggerID));
-				var trigger:PTrigger = (parent.getChildByName(scripts[i].TriggerID) as PTrigger);
-				trigger.Command = scripts[i].Command;
-				switch(scripts[i].ScriptType){
-					case 1: trigger.addEventListener(TRIGGER_CONTACT, pushDialog);
-						break;
-					case 2: trigger.addEventListener(TRIGGER_CONTACT, levelComplete);
-						break;
-					case 3: trigger.addEventListener(TRIGGER_CONTACT, upgrade);
-						break;
-					case 4: trigger.addEventListener(TRIGGER_CONTACT, spawnIguanas);
-						break;
-					case 5: trigger.addEventListener(TRIGGER_CONTACT, cutscene);
-						break;
-					default: trace("invalid command type");
-				}
-				
-			}
+			_scripts = ScriptParser.parser.loadNextLevel();
+			
 			
 		}
 		
@@ -103,6 +87,8 @@
 					po.setInitialWorld(this);
 				}
 			}
+			
+			loadScripts();
 			
 			this.dispatchEvent(new Event(DONE_LOADING));
 			_stepTimer = new Timer(stepTime);
@@ -175,13 +161,35 @@
 		//For handling collisions with the exit door
 		private var _hitExit:Boolean = false;
 		private function onContact(e:ContactEvent):void{
+			if(e.colliding) { //Starting contact
+				var scriptFound:Boolean = false;
+				for each (var script:ScriptEvent in _scripts){
+					if (script.TriggerID == e.triggerID){
+						scriptFound = true;
+						switch(script.ScriptType){
+							case "DIALOG": 
+								{DialogBox(getChildByName("dialog")).pushText(script.Command); trace("yagr");
+								break;}
+							case "LEVEL_COMPLETE": _hitExit = true;
+								break;
+							case "UPGRADE": {	var arr:Array = e.target.Command.split(" ");			
+												(parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]] = arr[1]; }
+						}
+					}
+				}
+				
+				if(scriptFound){
+					(parent.getChildByName(e.triggerID) as PTrigger).disabled = true;
+				}
+			}
 			if(e.triggerID == "exit" && !_hitExit){
 				com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
-				//_hitExit = true;
+				_hitExit = true;
 			}
 		}
 		
 		private function pushDialog(e:Event){
+		
 			com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(e.target.Command);
 		}
 		
