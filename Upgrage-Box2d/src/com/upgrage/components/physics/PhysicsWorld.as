@@ -49,6 +49,7 @@
 		private function loadScripts(){
 			var scripts:Vector.<ScriptEvent> = ScriptParser.parser.loadNextLevel();
 			for (var i=0; i < scripts.length; i++){
+				trace(scripts[i].TriggerID + " " + parent.getChildByName(scripts[i].TriggerID));
 				var trigger:PTrigger = (parent.getChildByName(scripts[i].TriggerID) as PTrigger);
 				trigger.Command = scripts[i].Command;
 				switch(scripts[i].ScriptType){
