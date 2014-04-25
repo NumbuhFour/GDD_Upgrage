@@ -183,7 +183,7 @@
 				}
 			}
 			if(e.triggerID == "exit" && !_hitExit){
-				com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
+				//com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
 				_hitExit = true;
 			}
 		}
