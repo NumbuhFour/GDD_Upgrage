@@ -27,7 +27,12 @@
 			loader.load(request);
 			trace("loading");
 		}
-
+		
+		public function loadNextLevel(){
+			if (_currLevel < _scripts.length)
+				return _scripts[_currLevel++];
+		}
+		
 		//parses data from file
 		private function onLoadScripts(e:Event){
 			_scripts = new Vector.<Vector.<ScriptEvent>>();
@@ -47,7 +52,7 @@
 			trace("CANS");
 			_loader.addEventListener(Event.COMPLETE,onLoadScript);
 			_loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
-			path = path.substring(0, path.lastIndexOf("t")+1);			
+			path = removeNewlines(path);		
 			var request:URLRequest = new URLRequest(_PATH + path);
 			
 			_loader.load(request);
@@ -58,7 +63,7 @@
 			var allScripts:Array = e.target.data.split("\n");
 			var vector:Vector.<ScriptEvent> = new Vector.<ScriptEvent>();
 			for each(var script:String in allScripts){
-				vector.push(new ScriptEvent(script.substring(0, script.length)))
+				vector.push(new ScriptEvent(removeNewlines(script)))
 			}
 			_scripts.push(vector);
 			trace(e.target.data);
@@ -83,9 +88,11 @@
 			trace(e.text);
 		}
 		
-		public function loadNextLevel(){
-			if (_scripts[_currLevel])
-				return _scripts[_currLevel++];
+		private function removeNewlines(str:String):String{
+			var crFilter:RegExp = new RegExp("\r", "gi");
+			var nlFilter = new RegExp("\n", "gi");
+			str = (str.replace(crFilter, "")).replace(nlFilter, "");
+			return str;
 		}
 		
 		public static function get parser():ScriptParser { return _parser; }

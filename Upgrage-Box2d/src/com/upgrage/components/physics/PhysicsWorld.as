@@ -56,8 +56,11 @@
 		private function loadScripts(){
 			_scripts = ScriptParser.parser.loadNextLevel();
 			for each (var script:ScriptEvent in _scripts)
-				if (script.ScriptType == "UNLOCK")
+				if (script.ScriptType == "UNLOCK"){
+					var trig:PTrigger = (parent.getChildByName(script.Command) as PTrigger);
+					trace("Command: " + script.Command + "\tTrigger: " + trig);
 					(parent.getChildByName(script.Command) as PTrigger).disabled = true;
+				}
 			
 		}
 		
@@ -179,7 +182,7 @@
 								var arr:Array = e.target.Command.split(" ");			
 								(parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]] = arr[1]; }
 								break;
-							case "UNLOCK": (getChildByName(script.Command) as PTrigger).disabled = false;
+							case "UNLOCK": {(parent.getChildByName(script.Command) as PTrigger).disabled = false; trace(script.Command + " unlocked");}
 						}
 					}
 				}
