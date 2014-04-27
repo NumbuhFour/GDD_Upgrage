@@ -55,7 +55,9 @@
 		
 		private function loadScripts(){
 			_scripts = ScriptParser.parser.loadNextLevel();
-			
+			for each (var script:ScriptEvent in _scripts)
+				if (script.ScriptType == "UNLOCK")
+					(parent.getChildByName(script.Command) as PTrigger).disabled = true;
 			
 		}
 		
@@ -160,11 +162,12 @@
 
 		//For handling collisions with the exit door
 		private var _hitExit:Boolean = false;
+		
 		private function onContact(e:ContactEvent):void{
 			if(e.colliding) { //Starting contact
 				var scriptFound:Boolean = false;
 				for each (var script:ScriptEvent in _scripts){
-					if (script.TriggerID == e.triggerID){
+					if (script.TriggerID == e.triggerID && !(parent.getChildByName(e.triggerID) as PTrigger).disabled){
 						scriptFound = true;
 						switch(script.ScriptType){
 							case "DIALOG": 
@@ -172,8 +175,11 @@
 								break;}
 							case "LEVEL_COMPLETE": _hitExit = true;
 								break;
-							case "UPGRADE": {	var arr:Array = e.target.Command.split(" ");			
-												(parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]] = arr[1]; }
+							case "UPGRADE": {	
+								var arr:Array = e.target.Command.split(" ");			
+								(parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]] = arr[1]; }
+								break;
+							case "UNLOCK": (getChildByName(script.Command) as PTrigger).disabled = false;
 						}
 					}
 				}

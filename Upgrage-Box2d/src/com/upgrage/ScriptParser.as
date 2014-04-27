@@ -84,7 +84,8 @@
 		}
 		
 		public function loadNextLevel(){
-			return _scripts[_currLevel++];
+			if (_scripts[_currLevel])
+				return _scripts[_currLevel++];
 		}
 		
 		public static function get parser():ScriptParser { return _parser; }
