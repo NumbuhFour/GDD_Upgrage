@@ -194,6 +194,8 @@
 			}
 			if(e.triggerID == "exit" && !_hitExit){
 				//com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
+				if (parent.getChildByName("phys_player"))
+					(parent.getChildByName("phys_player") as PPlayer).clearListeners();
 				_hitExit = true;
 			}
 		}

@@ -331,6 +331,12 @@
 			this._mouseCoords.y = e.stageY;
 		}
 		
+		public function clearListeners(){
+			stage.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUp);
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, updateMouse);
+		}
+		
 		protected override function setup(e:Event):void { //Box2d Physics initialization
 			super.setup(e);
 			
