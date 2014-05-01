@@ -7,17 +7,19 @@
 	public class ScriptParser {
 
 		private static var _parser:ScriptParser = new ScriptParser();
-		private var _scripts:Vector.<ScriptEvent>;
+		private var _scripts:Vector.<Vector.<ScriptEvent>>;
 		private var _levels:Array = new Array();
 		private var _PATH:String = "src/com/upgrage/scripting/";
 		private var _loader:URLLoader;
 		private var loadCounter:int;
+		private var _currLevel:uint;
 		
 		public function ScriptParser() {
 			if (_parser) throw new Error("Instance of ScriptParser already exists.");
 		}
 		
 		public function loadScripts(path:String){
+			_currLevel = 0;
 			var loader:URLLoader = new URLLoader();
 			loader.addEventListener(Event.COMPLETE,onLoadScripts,false,0,true);
 			
@@ -25,10 +27,15 @@
 			loader.load(request);
 			trace("loading");
 		}
-
+		
+		public function loadNextLevel(){
+			if (_currLevel < _scripts.length)
+				return _scripts[_currLevel++];
+		}
+		
 		//parses data from file
 		private function onLoadScripts(e:Event){
-			_scripts = new Vector.<ScriptEvent>();
+			_scripts = new Vector.<Vector.<ScriptEvent>>();
 			//trace("data: \n" + e.target.data);
 			var str:String = e.target.data;
 			trace("Dont be a bitch compy " + str);
@@ -45,7 +52,7 @@
 			trace("CANS");
 			_loader.addEventListener(Event.COMPLETE,onLoadScript);
 			_loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
-			path = path.substring(0, path.lastIndexOf("t")+1);			
+			path = removeNewlines(path);		
 			var request:URLRequest = new URLRequest(_PATH + path);
 			
 			_loader.load(request);
@@ -53,8 +60,12 @@
 		
 		private function onLoadScript(e:Event){
 			//var arr:Array = e.target.data.split("\n");
-			var script:ScriptEvent = new ScriptEvent(e.target.data);
-			_scripts.push(script);
+			var allScripts:Array = e.target.data.split("\n");
+			var vector:Vector.<ScriptEvent> = new Vector.<ScriptEvent>();
+			for each(var script:String in allScripts){
+				vector.push(new ScriptEvent(removeNewlines(script)))
+			}
+			_scripts.push(vector);
 			trace(e.target.data);
 			if (_loader != null)
 			{
@@ -77,12 +88,17 @@
 			trace(e.text);
 		}
 		
-		public function loadLevel(levelNum:int){
-			
+		private function removeNewlines(str:String):String{
+			var crFilter:RegExp = new RegExp("\r", "gi");
+			var nlFilter = new RegExp("\n", "gi");
+			str = (str.replace(crFilter, "")).replace(nlFilter, "");
+			return str;
 		}
 		
 		public static function get parser():ScriptParser { return _parser; }
-		public function get scripts():Vector.<ScriptEvent> { return _scripts; }
+		public function get scripts():Vector.<Vector.<ScriptEvent>> { return _scripts; }
+		public function get CurrLevel():uint { return _currLevel; }
+		public function set CurrLevel(val:uint) { _currLevel = val; }
 
 	}
 	

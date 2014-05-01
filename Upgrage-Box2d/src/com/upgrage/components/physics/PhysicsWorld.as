@@ -6,13 +6,14 @@
 	import flash.events.Event;
 	import flash.utils.Timer;
 	import flash.events.TimerEvent;
-	
+	import com.upgrage.DialogBox;
 	import Box2D.Dynamics.b2DebugDraw;
 	import com.as3toolkit.ui.Keyboarder;
 	import flash.ui.Keyboard;
 	import flash.display.Sprite;
 	import flash.display.Graphics;
-	import com.upgrage.DialogBox;
+	import com.upgrage.*;
+	import flash.utils.Dictionary;
 	
 	public class PhysicsWorld extends MovieClip{
 		
@@ -26,6 +27,9 @@
 		public static var DEBUG:Boolean = true;
 		private var _wasQDown:Boolean = false;
 		private var dbg:b2DebugDraw;
+		private var level:uint;
+		
+		private var _scripts:Vector.<ScriptEvent>;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -42,10 +46,22 @@
 		}
 		
 		private function start():void{
+
 			_world = new b2World(new b2Vec2(), true);
 			_collisionHandler = new CollisionHandler(this);
 			_world.SetContactListener(_collisionHandler);
 			this.addEventListener(Event.ADDED_TO_STAGE, onAdded);
+		}
+		
+		private function loadScripts(){
+			_scripts = ScriptParser.parser.loadNextLevel();
+			for each (var script:ScriptEvent in _scripts)
+				if (script.ScriptType == "UNLOCK"){
+					var trig:PTrigger = (parent.getChildByName(script.Command) as PTrigger);
+					trace("Command: " + script.Command + "\tTrigger: " + trig);
+					(parent.getChildByName(script.Command) as PTrigger).disabled = true;
+				}
+			
 		}
 		
 		private function onAdded(e:Event):void {
@@ -76,6 +92,8 @@
 					po.setInitialWorld(this);
 				}
 			}
+			
+			loadScripts();
 			
 			this.dispatchEvent(new Event(DONE_LOADING));
 			_stepTimer = new Timer(stepTime);
@@ -147,9 +165,35 @@
 
 		//For handling collisions with the exit door
 		private var _hitExit:Boolean = false;
+		
 		private function onContact(e:ContactEvent):void{
+			if(e.colliding) { //Starting contact
+				trace("Trigger hit: " + e.triggerID);
+				var scriptFound:Boolean = false;
+				for each (var script:ScriptEvent in _scripts){
+					if (script.TriggerID == e.triggerID && !(parent.getChildByName(e.triggerID) as PTrigger).disabled){
+						scriptFound = true;
+						switch(script.ScriptType){
+							case "DIALOG": 
+								{DialogBox(getChildByName("dialog")).pushText(script.Command); trace("yagr");
+								break;}
+							case "LEVEL_COMPLETE": _hitExit = true;
+								break;
+							case "UPGRADE": {	
+								var arr:Array = e.target.Command.split(" ");			
+								(parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]] = arr[1]; }
+								break;
+							case "UNLOCK": {(parent.getChildByName(script.Command) as PTrigger).disabled = false; trace(script.Command + " unlocked");}
+						}
+					}
+				}
+				
+				if(scriptFound){
+					(parent.getChildByName(e.triggerID) as PTrigger).disabled = true;
+				}
+			}
 			if(e.triggerID == "exit" && !_hitExit){
-				com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
+				//com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
 				_hitExit = true;
 			}
 		}

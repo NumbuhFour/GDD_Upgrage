@@ -2,6 +2,8 @@
 	
 	import flash.display.MovieClip;
 	import Box2D.Collision.Shapes.b2CircleShape;
+	import Box2D.Dynamics.b2Fixture;
+	import Box2D.Dynamics.Contacts.b2Contact;
 	import flash.events.Event;
 	import flash.display.Sprite;
 	import Box2D.Dynamics.b2Fixture;

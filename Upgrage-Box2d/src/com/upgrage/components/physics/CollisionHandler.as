@@ -26,7 +26,7 @@
 				userData = fixtureB.GetBody().GetUserData();
 				if(userData is PTrigger){
 					trigger = userData as PTrigger;
-					_world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.triggerID,true));
+					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureA,fixtureB,contact,true);
 				}
@@ -35,7 +35,7 @@
 				userData = fixtureA.GetBody().GetUserData();
 				if(userData is PTrigger){
 					trigger = userData as PTrigger;
-					_world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.triggerID,true));
+					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureB,fixtureA,contact,true);
 				}
@@ -53,7 +53,7 @@
 				userData = fixtureB.GetBody().GetUserData();
 				if(userData is PTrigger){
 					trigger = userData as PTrigger;
-					_world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.triggerID,false));
+					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureA, fixtureB,contact,false);
 				}
@@ -62,7 +62,7 @@
 				userData = fixtureA.GetBody().GetUserData();
 				if(userData is PTrigger){
 					trigger = userData as PTrigger;
-					_world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.triggerID,false));
+					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureB, fixtureA,contact,false);
 				}
