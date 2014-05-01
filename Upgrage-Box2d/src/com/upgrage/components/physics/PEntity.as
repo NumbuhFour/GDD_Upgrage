@@ -4,6 +4,8 @@
 	import Box2D.Collision.Shapes.b2CircleShape;
 	import flash.events.Event;
 	import flash.display.Sprite;
+	import Box2D.Dynamics.b2Fixture;
+	import Box2D.Dynamics.Contacts.b2Contact;
 	
 	
 	public class PEntity extends PhysicsObj {
@@ -36,6 +38,9 @@
 			_fixtureDef.shape = _shape;
 			_fixture = _body.CreateFixture(_fixtureDef);
 			_body.SetFixedRotation(true);*/
+		}
+		
+		public function onHit(fixture:b2Fixture, trigger:b2Fixture, contact:b2Contact, colliding:Boolean):void{
 		}
 		
 		/*[Inspectable(name="Is Static", type=Boolean, defaultValue=false)]

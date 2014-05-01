@@ -11,6 +11,7 @@
 	import flash.events.Event;
 	import fl.events.ComponentEvent;
 	import fl.core.InvalidationType;
+	import com.upgrage.components.GraphicalObject;
 
 
 	//Required overrides: drawBounds, setup
@@ -237,7 +238,11 @@
 		[Inspectable(name="Graphical Component", type=String, defaultValue="")]
 		public function set followingObjectName(val:String):void{
 			_followingObjectName = val;
-			this._followingObject = parent.getChildByName(_followingObjectName) as MovieClip;
+			try{
+				this._followingObject = (parent.getChildByName(_followingObjectName) as GraphicalObject).duplicate();//parent.getChildByName(_followingObjectName) as MovieClip;
+			}catch(e:Error){
+				trace("Error: Following object must extend base class com.upgrage.components.GraphicalObject!");
+			}
 			//this._followingObject = this._followingObject.duplicateMovieClip("clip-" + _followingObject.name + ":r" + Math.round(Math.random()*1000), parent.numChildren);
 			this.updateSelfToGraphics();
 		}
