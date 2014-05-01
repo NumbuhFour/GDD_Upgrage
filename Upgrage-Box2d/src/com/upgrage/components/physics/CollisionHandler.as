@@ -27,8 +27,8 @@
 				if(userData is PTrigger){
 					trigger = userData as PTrigger;
 					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true));
-				}else if(userData is PPlayer){ //If the trigger belongs to the player
-					(userData as PPlayer).onHit(fixtureA,fixtureB,contact,true);
+				}else if(userData is PEntity){ //If the trigger belongs to the player
+					(userData as PEntity).onHit(fixtureA,fixtureB,contact,true);
 				}
             }
             if (fixtureA.IsSensor()) {
@@ -36,8 +36,8 @@
 				if(userData is PTrigger){
 					trigger = userData as PTrigger;
 					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true));
-				}else if(userData is PPlayer){ //If the trigger belongs to the player
-					(userData as PPlayer).onHit(fixtureB,fixtureA,contact,true);
+				}else if(userData is PEntity){ //If the trigger belongs to the player
+					(userData as PEntity).onHit(fixtureB,fixtureA,contact,true);
 				}
             }
         }
@@ -54,8 +54,8 @@
 				if(userData is PTrigger){
 					trigger = userData as PTrigger;
 					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false));
-				}else if(userData is PPlayer){ //If the trigger belongs to the player
-					(userData as PPlayer).onHit(fixtureA, fixtureB,contact,false);
+				}else if(userData is PEntity){ //If the trigger belongs to the player
+					(userData as PEntity).onHit(fixtureA, fixtureB,contact,false);
 				}
             }
             if (fixtureA.IsSensor()) {
@@ -63,8 +63,8 @@
 				if(userData is PTrigger){
 					trigger = userData as PTrigger;
 					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false));
-				}else if(userData is PPlayer){ //If the trigger belongs to the player
-					(userData as PPlayer).onHit(fixtureB, fixtureA,contact,false);
+				}else if(userData is PEntity){ //If the trigger belongs to the player
+					(userData as PEntity).onHit(fixtureB, fixtureA,contact,false);
 				}
             }
 		}

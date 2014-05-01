@@ -352,7 +352,7 @@
 			this._rightSenFix = _body.CreateFixture(rightSenFixDef);
 		}
 		
-		public function onHit(fixture:b2Fixture, trigger:b2Fixture, contact:b2Contact, colliding:Boolean):void{
+		public override function onHit(fixture:b2Fixture, trigger:b2Fixture, contact:b2Contact, colliding:Boolean):void{
 			//TODO if wall act accordingly, if enemy take damage
 			
 			if(fixture.IsSensor()) return; //If colliding with a sensor, ignore

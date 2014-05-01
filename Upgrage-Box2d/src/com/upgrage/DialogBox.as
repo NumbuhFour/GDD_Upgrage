@@ -11,7 +11,7 @@
 	public class DialogBox extends MovieClip {
 		
 		private var _queue:Queue;
-		private var _text:String = "Hello World";
+		private var _text:String = "";
 		private var _open:Boolean = false;
 		private var _world:PhysicsWorld;
 		

@@ -197,31 +197,6 @@
 			}
 		}
 		
-		private function pushDialog(e:Event){
-		
-			com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(e.target.Command);
-		}
-		
-		private function levelComplete(e:Event){
-			com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(e.target.Command);
-			_hitExit = true;
-		}
-		
-		private function upgrade(e:Event){
-			var arr:Array = e.target.Command.split(" ");
-			//com.upgrage.DialogBox(parent.getChildByName("dialog")).pushText(arr[1]);
-			(parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]] = arr[1];
-			trace("upgrade");
-		}
-		
-		private function spawnIguanas(e:Event){
-			trace("spawn iguanas");
-		}
-		
-		private function cutscene(E:Event){
-			trace("cutscene");
-		}
-		
 		public function pause():void { _paused = true; }
 		public function unpause():void { _paused = false; }
 
