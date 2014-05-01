@@ -168,6 +168,7 @@
 		
 		private function onContact(e:ContactEvent):void{
 			if(e.colliding) { //Starting contact
+				trace("Trigger hit: " + e.triggerID);
 				var scriptFound:Boolean = false;
 				for each (var script:ScriptEvent in _scripts){
 					if (script.TriggerID == e.triggerID && !(parent.getChildByName(e.triggerID) as PTrigger).disabled){

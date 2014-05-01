@@ -181,6 +181,7 @@
 						pushOff = -_upgrades["accel speed onground"]*_upgrades["wall jump out percentage"];
 						this.followingObject.scaleX = -Math.abs(this.followingObject.scaleX);//Flip player
 					}
+					_body.SetLinearVelocity(new b2Vec2(_body.GetLinearVelocity().x,0));
 					_body.ApplyImpulse(new b2Vec2(pushOff*_body.GetMass(),-jumpOff*_body.GetMass()),_body.GetWorldCenter());
 					this._midAirJumpsLeft = 0;
 					this._isOnWall = false;	
@@ -246,7 +247,7 @@
 		private function cleanAnimations():void{
 						
 			//Setting animation to idle when idle
-			if(this._animState != "idle" && _hitBelow && !_kLeft && !_kRight && this._body.GetLinearVelocity().LengthSquared() < 10){
+			if(this._animState != "idle" && _hitBelow && (!_kLeft && !_kRight || this._animState != "run") && this._body.GetLinearVelocity().LengthSquared() < 10){
 				this.followingObject.gotoAndPlay("idle");
 				this._animState = "idle";
 			}
@@ -279,7 +280,7 @@
 
 		//Manages input for wallsliding
 		private function wallSlide():void{
-			if(this._upgrades["wall slide"] && (((_hitLeft && _kLeft) || (_hitRight && _kRight)) && !_hitBelow && _canWallSlide)){ //On wall, pressing key
+			if(this._upgrades["wall slide"] && (((_hitLeft/* && _kLeft*/) || (_hitRight/* && _kRight*/)) && !_hitBelow && _canWallSlide)){ //On wall, pressing key
 				var vertSpeed:Number = _body.GetLinearVelocity().y;
 				if(vertSpeed > 0){ //Must be going down to apply force down
 					/*var dragVec:b2Vec2 = new b2Vec2(0,vertSpeed);
