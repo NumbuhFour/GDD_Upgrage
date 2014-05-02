@@ -1,16 +1,15 @@
 ﻿package com.upgrage {
-	import flash.display.MovieClip;
 	
-	public class RoachSpawner extends MovieClip implements CustomEvent{
+	public class IguanaSpawner extends MovieClip implements CustomEvent{
 
-		public function RoachSpawner() {
+		public function IguanaSpawner() {
 			
 		}
 
 		public function begin(){
 			
 		}
-
+		
 		public function interval(str:String){
 			
 		}

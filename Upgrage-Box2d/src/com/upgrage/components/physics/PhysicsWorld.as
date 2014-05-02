@@ -26,6 +26,7 @@
 		
 		public static var DEBUG:Boolean = true;
 		private var _wasQDown:Boolean = false;
+		private var _wasPDown:Boolean = false;
 		private var dbg:b2DebugDraw;
 		private var level:uint;
 		
@@ -163,6 +164,11 @@
 					g.clear();
 				}
 			}
+			//menu controls
+			//might want to let P close menu as well
+			if (Keyboarder.keyIsDown(Keyboard.P) && !_wasPDown && !_paused){
+					((parent.parent as MovieClip).getChildByName("menu") as PauseMenu).show();
+			}
 			_wasQDown = Keyboarder.keyIsDown(Keyboard.Q);
 			if(DEBUG) _world.DrawDebugData();
 			else dbg.GetSprite().graphics.clear();
@@ -182,7 +188,7 @@
 							case "DIALOG": 
 								{DialogBox(getChildByName("dialog")).pushText(script.Command); trace("yagr");
 								break;}
-							case "LEVEL_COMPLETE": _hitExit = true;
+							case "LEVEL_COMPLETE": cleanup(); _hitExit = true;
 								break;
 							case "UPGRADE": {	
 								var arr:Array = e.target.Command.split(" ");			
@@ -199,10 +205,15 @@
 			}
 			if(e.triggerID == "exit" && !_hitExit){
 				//com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
-				if (parent.getChildByName("phys_player"))
-					(parent.getChildByName("phys_player") as PPlayer).clearListeners();
+				cleanup();
 				_hitExit = true;
 			}
+		}
+		
+		public function cleanup(){
+			if (parent.getChildByName("phys_player"))
+					(parent.getChildByName("phys_player") as PPlayer).clearListeners();
+			ScriptParser.parser.CurrLevel = 0;
 		}
 		
 		public function pause():void { _paused = true; }

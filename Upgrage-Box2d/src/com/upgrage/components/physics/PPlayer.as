@@ -326,7 +326,7 @@
 		}
 		
 		private function updateMouse(e:MouseEvent){
-			trace("mouse moved");
+			//trace("mouse moved");
 			this._mouseCoords.x = e.stageX;
 			this._mouseCoords.y = e.stageY;
 		}
