@@ -13,6 +13,7 @@
 	import Box2D.Dynamics.b2FixtureDef;
 	import Box2D.Dynamics.Contacts.b2Contact;
 	import flash.utils.Dictionary;
+	import com.upgrage.components.Projectile;
 	
 	
 	public class PPlayer extends PEntity {
@@ -64,6 +65,7 @@
 		private var _onWallTime:Number = 0;
 		private var _canWallSlide:Boolean = true;
 		private var _canWallJump:Boolean = false;
+		private var _spaceReleased:Boolean = false;
 		
 		private var _kDLReleased:Boolean = true; //DashKey Left released
 		private var _kDRReleased:Boolean = true; //DashKey Left released
@@ -120,6 +122,9 @@
 		
 		public override function onTick(e:Event):void {
 			super.onTick(e);
+			
+			if(_kSpace && !Keyboarder.keyIsDown(Keyboard.SPACE)) this._spaceReleased = true;
+			else _spaceReleased = false;
 			
 			_kLeft = Keyboarder.keyIsDown(Keyboard.A) || Keyboarder.keyIsDown(Keyboard.LEFT);
 			_kRight = Keyboarder.keyIsDown(Keyboard.D) || Keyboarder.keyIsDown(Keyboard.RIGHT);
@@ -205,6 +210,12 @@
 				_body.ApplyImpulse(new b2Vec2(0,-_upgrades["jetpack accel"]*_body.GetMass()), _body.GetWorldCenter());
 				if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
 				this._animState = "jump";
+			}
+			
+			if(this._spaceReleased){
+				var bullet:Projectile = new Projectile();
+				this._world.addObjectToLevel(bullet);
+				bullet.setPositionAndVelocity(this._body.GetPosition(), new b2Vec2(2,0));
 			}
 			/*if(_kDashLeft){TODO
 				if(_kDLReleased) {
