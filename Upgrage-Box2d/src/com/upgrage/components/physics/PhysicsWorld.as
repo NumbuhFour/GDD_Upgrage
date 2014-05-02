@@ -19,7 +19,6 @@
 		
 		public static const DONE_LOADING:String = "DoneLoadingWorld";
 		public static const TICK_WORLD:String = "TickWorld";
-		public static const APPLY_GRAVITY:String = "DoGravity";
 		public static const TRIGGER_CONTACT:String = "TriggerContact";
 
 		public static const DEFAULT_GRAVITY:b2Vec2 = new b2Vec2(0,10);
@@ -113,7 +112,6 @@
 				}
 				//_world.ClearForces();
 				_world.Step(stepTime,10,10);
-				this.dispatchEvent(new Event(APPLY_GRAVITY));
 				this.dispatchEvent(new Event(TICK_WORLD));
 			}
 			
@@ -158,7 +156,7 @@
 					g.clear();
 				}
 			}
-			_wasQDown = Keyboarder.keyIsDown(Keyboard.Q);
+			_wasQDown = Keyboarder.keyIsDown(Keyboard.M);
 			if(DEBUG) _world.DrawDebugData();
 			else dbg.GetSprite().graphics.clear();
 		}
@@ -196,6 +194,15 @@
 				//com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
 				_hitExit = true;
 			}
+		}
+		
+		public function addObjectToLevel(obj:PhysicsObj):void{
+			if(obj.parent == null){
+				parent.addChild(obj);
+			}
+			obj.setInitialWorld(this);
+			this.dispatchEvent(new Event(DONE_LOADING));
+			
 		}
 		
 		public function pause():void { _paused = true; }
