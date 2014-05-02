@@ -14,6 +14,8 @@
 	import Box2D.Dynamics.Contacts.b2Contact;
 	import flash.utils.Dictionary;
 	import com.upgrage.components.Projectile;
+	import flash.events.MouseEvent;
+	import flash.geom.Point;
 	
 	
 	public class PPlayer extends PEntity {
@@ -47,7 +49,7 @@
 		private var _hitRight:Boolean = false;
 		private var _numHitsRight:Number = 0;
 		
-		//Keys
+		//Input tracking
 		private var _kLeft:Boolean = false;
 		private var _kRight:Boolean = false;
 		private var _kUp:Boolean = false;
@@ -55,6 +57,9 @@
 		private var _kSpace:Boolean = false;
 		private var _kDashLeft:Boolean = false;
 		private var _kDashRight:Boolean = false;
+		private var _clicked:Boolean = false;
+		private var _iterSinceLastClick:uint = 0;
+		private var _mouseCoords:Point = new Point();
 		
 		
 		//Tracking stuff
@@ -77,6 +82,10 @@
 		public function PPlayer() {
 			_upgrades = new Dictionary();
 			initProperties();
+			trace("adding mouse listeners");
+			stage.addEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
+			stage.addEventListener(MouseEvent.MOUSE_UP, mouseUp);
+			stage.addEventListener(MouseEvent.MOUSE_MOVE, updateMouse);
 		}
 		
 		private function initProperties(){
@@ -96,6 +105,9 @@
 			_upgrades["jetpack"] = true;
 			_upgrades["jetpack accel"] = 2.5;
 			_upgrades["max jetpack speed"] = 7.3;
+			
+			_upgrades["rockets"] = true;
+			_upgrades["manhole cover"] = false;
 			
 			_upgrades["wall jump"] = true;
 			_upgrades["wall slide"] = true;
@@ -133,6 +145,8 @@
 			_kSpace = Keyboarder.keyIsDown(Keyboard.SPACE);
 			_kDashLeft = Keyboarder.keyIsDown(Keyboard.Q);
 			_kDashRight = Keyboarder.keyIsDown(Keyboard.E);
+		
+			
 			
 			if((!_kLeft && !_kRight ) || (_kLeft == _kRight) || !_hitBelow) applyHorizontalDrag();
 			
@@ -232,6 +246,10 @@
 				_kDRReleased = false;
 			}else if(_hitBelow) _kDRReleased = true;*/
 			
+			if(_upgrades["rockets"] && !_upgrades["manhole cover"] && _clicked && _iterSinceLastClick > 30){
+				//do rockets
+			}
+			
 			if(!_kUp) this._canJumpAgain = true;
 			this._canWallJump = this._wasOnWall && !_kUp && !_hitBelow; //You have to let go of the up key at least once before jumping off wall
 			this._wasOnWall = this._isOnWall;
@@ -305,6 +323,29 @@
 				}
 			}
 			if(_hitBelow) _canWallSlide = true;
+		}
+		
+		private function mouseDown(e:MouseEvent){
+			trace("clicked");
+			this._clicked = true;
+			this._iterSinceLastClick = 0;
+		}
+		
+		private function mouseUp(e:MouseEvent){
+			trace("unclicked");
+			this._clicked = false;
+		}
+		
+		private function updateMouse(e:MouseEvent){
+			trace("mouse moved");
+			this._mouseCoords.x = e.stageX;
+			this._mouseCoords.y = e.stageY;
+		}
+		
+		public function clearListeners(){
+			stage.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
+			stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUp);
+			stage.removeEventListener(MouseEvent.MOUSE_MOVE, updateMouse);
 		}
 		
 		protected override function setup(e:Event):void { //Box2d Physics initialization

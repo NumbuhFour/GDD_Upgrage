@@ -29,6 +29,7 @@
 		private var level:uint;
 		
 		private var _scripts:Vector.<ScriptEvent>;
+		private var _events:Vector.<CustomEvent>;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -90,9 +91,13 @@
 					var po:PhysicsObj = c as PhysicsObj;
 					po.setInitialWorld(this);
 				}
+				else if (c is CustomEvent)
+					_events.push(c);
 			}
 			
 			loadScripts();
+			
+			
 			
 			this.dispatchEvent(new Event(DONE_LOADING));
 			_stepTimer = new Timer(stepTime);
@@ -192,6 +197,8 @@
 			}
 			if(e.triggerID == "exit" && !_hitExit){
 				//com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
+				if (parent.getChildByName("phys_player"))
+					(parent.getChildByName("phys_player") as PPlayer).clearListeners();
 				_hitExit = true;
 			}
 		}
