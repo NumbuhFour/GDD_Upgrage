@@ -17,6 +17,8 @@
 	//Required overrides: drawBounds, setup
 	public class PhysicsObj extends UIComponent{
 
+		protected var _isDead:Boolean = false
+		
 		private var _isStatic:Boolean = true;
 		private var _fixedRotation:Boolean = false;
 		private var _density:Number = 10;
@@ -76,9 +78,10 @@
 		}
 		
 		public function kill(){
-			_world.w.DestroyBody(_body);
 			if(followingObject) parent.removeChild(this.followingObject);
 			parent.removeChild(this);
+			_world.removeBody(this._body);
+			this._isDead = true;
 		}
 		
 		protected override function configUI():void {
@@ -121,6 +124,9 @@
 		public function setPositionAndVelocity(pos:b2Vec2, vel:b2Vec2){
 			this._body.SetPosition(pos);
 			this._body.SetLinearVelocity(vel);
+		}
+		public function setRotation(rad:Number){
+			this._body.SetAngle(rad);
 		}
 		public function onTick(e:Event):void{
 			

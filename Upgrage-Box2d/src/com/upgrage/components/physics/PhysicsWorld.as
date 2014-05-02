@@ -14,6 +14,8 @@
 	import flash.display.Graphics;
 	import com.upgrage.*;
 	import flash.utils.Dictionary;
+	import Box2D.Dynamics.b2Body;
+	import com.upgrage.events.ContactEvent;
 	
 	public class PhysicsWorld extends MovieClip{
 		
@@ -30,6 +32,7 @@
 		
 		private var _scripts:Vector.<ScriptEvent>;
 		private var _events:Vector.<CustomEvent>;
+		private var _bodiesToRemove:Vector.<b2Body>;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -47,6 +50,7 @@
 		
 		private function start():void{
 
+			_bodiesToRemove = new Vector.<b2Body>();
 			_world = new b2World(new b2Vec2(), true);
 			_collisionHandler = new CollisionHandler(this);
 			_world.SetContactListener(_collisionHandler);
@@ -118,6 +122,11 @@
 				//_world.ClearForces();
 				_world.Step(stepTime,10,10);
 				this.dispatchEvent(new Event(TICK_WORLD));
+				
+				for each (var b:b2Body in _bodiesToRemove){
+					_world.DestroyBody(b);
+				}
+				_bodiesToRemove = new Vector.<b2Body>()
 			}
 			
 			/*if(parent == null || MovieClip(parent).currentFrame != _currentFrame){
@@ -209,7 +218,9 @@
 			}
 			obj.setInitialWorld(this);
 			this.dispatchEvent(new Event(DONE_LOADING));
-			
+		}
+		public function removeBody(body:b2Body):void{
+			this._bodiesToRemove.push(body);
 		}
 		
 		public function pause():void { _paused = true; }

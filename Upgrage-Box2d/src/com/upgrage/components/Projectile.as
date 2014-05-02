@@ -5,6 +5,10 @@
 	import Box2D.Dynamics.b2Fixture;
 	import Box2D.Dynamics.Contacts.b2Contact;
 	import Box2D.Common.Math.b2Vec2;
+	import Box2D.Dynamics.b2Body;
+	import com.upgrage.components.physics.PhysicsObj;
+	import com.upgrage.components.physics.PPlayer;
+	import com.upgrage.events.ShotEvent;
 	
 	public class Projectile extends PEntity{
 
@@ -41,6 +45,19 @@
 		
 		public override function onHit(fixture:b2Fixture, trigger:b2Fixture, contact:b2Contact, colliding:Boolean):void{
 			
+			if(fixture.IsSensor()) return;
+			var hit:PhysicsObj = fixture.GetBody().GetUserData();
+			if(hit is PPlayer || this._isDead) return;
+			if(hit.followingObjectName){
+				trace("Hit a " + hit.followingObjectName);
+			}
+			this._world.dispatchEvent(new ShotEvent(fixture));
+			
+			var explosion:Explosion = new Explosion();
+			explosion.x = this.x;
+			explosion.y = this.y;
+			parent.addChild(explosion);
+			this.kill();
 		}
 		
 		public override function onTick(e:Event):void{

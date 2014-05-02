@@ -8,6 +8,8 @@
     import Box2D.Common.*;
     import Box2D.Common.Math.*;
 	
+	import com.upgrage.events.ContactEvent;
+	
 	public class CollisionHandler extends b2ContactListener{
 		private var _world:PhysicsWorld;
 		
@@ -22,9 +24,11 @@
             // if the fixture is a sensor, mark the parent body to be removed
 			var trigger:PTrigger;
 			var userData:Object;
+			var secUserData:Object;
             if (fixtureB.IsSensor()) {
 				userData = fixtureB.GetBody().GetUserData();
-				if(userData is PTrigger){
+				secUserData = fixtureA.GetBody().GetUserData();
+				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
 					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
@@ -33,7 +37,8 @@
             }
             if (fixtureA.IsSensor()) {
 				userData = fixtureA.GetBody().GetUserData();
-				if(userData is PTrigger){
+				secUserData = fixtureB.GetBody().GetUserData();
+				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
 					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
@@ -49,9 +54,11 @@
             // if the fixture is a sensor, mark the parent body to be removed
 			var trigger:PTrigger;
 			var userData:Object;
+			var secUserData:Object;
             if (fixtureB.IsSensor()) {
 				userData = fixtureB.GetBody().GetUserData();
-				if(userData is PTrigger){
+				secUserData = fixtureA.GetBody().GetUserData();
+				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
 					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
@@ -60,7 +67,8 @@
             }
             if (fixtureA.IsSensor()) {
 				userData = fixtureA.GetBody().GetUserData();
-				if(userData is PTrigger){
+				secUserData = fixtureB.GetBody().GetUserData();
+				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
 					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false));
 				}else if(userData is PEntity){ //If the trigger belongs to the player

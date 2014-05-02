@@ -70,7 +70,6 @@
 		private var _onWallTime:Number = 0;
 		private var _canWallSlide:Boolean = true;
 		private var _canWallJump:Boolean = false;
-		private var _spaceReleased:Boolean = false;
 		
 		private var _kDLReleased:Boolean = true; //DashKey Left released
 		private var _kDRReleased:Boolean = true; //DashKey Left released
@@ -82,7 +81,6 @@
 		public function PPlayer() {
 			_upgrades = new Dictionary();
 			initProperties();
-			trace("adding mouse listeners");
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
 			stage.addEventListener(MouseEvent.MOUSE_UP, mouseUp);
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, updateMouse);
@@ -108,6 +106,7 @@
 			
 			_upgrades["rockets"] = true;
 			_upgrades["manhole cover"] = false;
+			_upgrades["rocket speed"] = 5;
 			
 			_upgrades["wall jump"] = true;
 			_upgrades["wall slide"] = true;
@@ -134,9 +133,6 @@
 		
 		public override function onTick(e:Event):void {
 			super.onTick(e);
-			
-			if(_kSpace && !Keyboarder.keyIsDown(Keyboard.SPACE)) this._spaceReleased = true;
-			else _spaceReleased = false;
 			
 			_kLeft = Keyboarder.keyIsDown(Keyboard.A) || Keyboarder.keyIsDown(Keyboard.LEFT);
 			_kRight = Keyboarder.keyIsDown(Keyboard.D) || Keyboarder.keyIsDown(Keyboard.RIGHT);
@@ -226,11 +222,6 @@
 				this._animState = "jump";
 			}
 			
-			if(this._spaceReleased){
-				var bullet:Projectile = new Projectile();
-				this._world.addObjectToLevel(bullet);
-				bullet.setPositionAndVelocity(this._body.GetPosition(), new b2Vec2(2,0));
-			}
 			/*if(_kDashLeft){TODO
 				if(_kDLReleased) {
 					_body.SetLinearVelocity(new b2Vec2()); //Reset speed
@@ -247,8 +238,18 @@
 			}else if(_hitBelow) _kDRReleased = true;*/
 			
 			if(_upgrades["rockets"] && !_upgrades["manhole cover"] && _clicked && _iterSinceLastClick > 30){
-				//do rockets
+				var bullet:Projectile = new Projectile();
+				this._world.addObjectToLevel(bullet);
+				var fireVector:b2Vec2 = new b2Vec2(_mouseCoords.x / _world.pscale, _mouseCoords.y / _world.pscale);
+				fireVector.Subtract(_body.GetPosition());
+				fireVector.Normalize();
+				fireVector.Multiply(_upgrades["rocket speed"]);
+				bullet.setPositionAndVelocity(_body.GetPosition(), fireVector);
+				var rot:Number = Math.atan2(_mouseCoords.y - this.y, _mouseCoords.x - this.x);
+				bullet.setRotation(rot);
+				_iterSinceLastClick = 0;
 			}
+			_iterSinceLastClick ++;
 			
 			if(!_kUp) this._canJumpAgain = true;
 			this._canWallJump = this._wasOnWall && !_kUp && !_hitBelow; //You have to let go of the up key at least once before jumping off wall
@@ -326,21 +327,31 @@
 		}
 		
 		private function mouseDown(e:MouseEvent){
-			trace("clicked");
+			this._mouseCoords.x = e.stageX;
+			this._mouseCoords.y = e.stageY;
+			recalcMousePos();
 			this._clicked = true;
-			this._iterSinceLastClick = 0;
 		}
 		
 		private function mouseUp(e:MouseEvent){
-			trace("unclicked");
+			this._mouseCoords.x = e.stageX;
+			this._mouseCoords.y = e.stageY;
 			this._clicked = false;
+			recalcMousePos();
 		}
 		
 		private function updateMouse(e:MouseEvent){
-			trace("mouse moved");
-			this._mouseCoords.x = e.stageX;
-			this._mouseCoords.y = e.stageY;
+			this._mouseCoords.x = e.localX;
+			this._mouseCoords.y = e.localY;
+			this._clicked = e.buttonDown;
+			recalcMousePos();
 		}
+		//Adjust for parent's translations
+		private function recalcMousePos(){
+			this._mouseCoords.x -= parent.x;
+			this._mouseCoords.y -= parent.y;
+		}
+
 		
 		public function clearListeners(){
 			stage.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
