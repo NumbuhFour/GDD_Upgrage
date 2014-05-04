@@ -171,7 +171,7 @@
 				}
 				if(!_hitRight) this.followingObject.scaleX = -Math.abs(this.followingObject.scaleX);//Flip player
 			}
-			if(this._isOnWall && _upgrades["wall jump"] ){ //Jump Off Wall
+			if(this._isOnWall && _upgrades["wall jump"] == true ){ //Jump Off Wall
 				if((_kUp && _canWallJump) || (_hitLeft && _kRight) || (_hitRight && _kLeft)){ //Jump when up is pressed or when key pressed is opposite of wall direction
 					var jumpOff:Number = _upgrades["jump force"]*_upgrades["wall jump up percentage"];
 					var pushOff:Number = 0;
@@ -190,7 +190,7 @@
 					if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
 					this._animState = "jump";
 				}
-			}else if(_kUp && _upgrades["jump"] ){ //jump & double jump
+			}else if(_kUp && _upgrades["jump"] == true){ //jump & double jump
 				//var jetpack:Boolean = _upgrades["jetpack"];
 				if(/* !jetpack && */(_hitBelow || _midAirJumpsLeft > 0)){
 					var doJump:Boolean = false;
@@ -216,7 +216,7 @@
 				}
 			}
 			
-			if(_upgrades["jetpack"] && _kSpace && _body.GetLinearVelocity().y >-_upgrades["max jetpack speed"]){ //JETPACK
+			if(_upgrades["jetpack"] == true && _kSpace && _body.GetLinearVelocity().y >-_upgrades["max jetpack speed"]){ //JETPACK
 				_body.ApplyImpulse(new b2Vec2(0,-_upgrades["jetpack accel"]*_body.GetMass()), _body.GetWorldCenter());
 				if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
 				this._animState = "jump";
@@ -325,6 +325,14 @@
 			}
 			if(_hitBelow) _canWallSlide = true;
 		}
+		
+		public function setUpgrade(key:String, val:String) { 
+			trace("type: " + typeof(_upgrades[key]));			
+			if (_upgrades[key] is Boolean)
+				_upgrades[key] = (val == "true"); 
+			else 
+				_upgrades[key] = val;
+			trace(key + " : " + val); }
 		
 		private function mouseDown(e:MouseEvent){
 			this._mouseCoords.x = e.stageX;

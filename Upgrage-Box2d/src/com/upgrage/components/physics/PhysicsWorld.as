@@ -202,8 +202,10 @@
 							case "LEVEL_COMPLETE": cleanup(); _hitExit = true;
 								break;
 							case "UPGRADE": {	
-								var arr:Array = e.target.Command.split(" ");			
-								(parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]] = arr[1]; }
+								var arr:Array = new Array(script.Command.substring(0, script.Command.lastIndexOf(" ")), script.Command.substring(script.Command.lastIndexOf(" ")+1, script.Command.length));			
+								trace(arr);
+								(parent.getChildByName("phys_player") as PPlayer).setUpgrade(arr[0], arr[1]); 
+								trace((parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]]); }
 								break;
 							case "UNLOCK": {(parent.getChildByName(script.Command) as PTrigger).disabled = false; trace(script.Command + " unlocked");}
 						}
@@ -224,7 +226,7 @@
 		public function cleanup(){
 			if (parent.getChildByName("phys_player"))
 					(parent.getChildByName("phys_player") as PPlayer).clearListeners();
-			ScriptParser.parser.CurrLevel = 0;
+			//ScriptParser.parser.CurrLevel = 0;
 		}
 		
 		public function addObjectToLevel(obj:PhysicsObj):void{
