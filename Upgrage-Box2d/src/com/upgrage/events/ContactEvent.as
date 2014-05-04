@@ -1,4 +1,4 @@
-﻿package com.upgrage.components.physics {
+﻿package com.upgrage.events {
 	
 	import flash.events.Event;
 	public class ContactEvent extends Event{

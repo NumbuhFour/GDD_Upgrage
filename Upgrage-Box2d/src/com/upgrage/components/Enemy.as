@@ -7,6 +7,7 @@
 	import Box2D.Common.Math.b2Vec2;
 	import Box2D.Dynamics.b2Fixture;
 	import Box2D.Dynamics.Contacts.b2Contact;
+	import com.upgrage.events.ShotEvent;
 
 	public class Enemy extends PEntity{
 
@@ -67,9 +68,17 @@
 				}
 			}
 		}
+		public function onShot(e:ShotEvent):void{
+			if(e.hit.GetBody() == this._body){
+				this.kill();
+			}
+		}
 		
 		protected override function setup(e:Event):void{
 			super.setup(e);
+
+			_world.addEventListener(ShotEvent.SHOT,onShot);
+			
 			_shape = new b2PolygonShape();
 			var wid:Number = this.width/2/_world.pscale;
 			var hei:Number = this.height/2/_world.pscale;
@@ -137,6 +146,7 @@
 		}
 		
 		public override function onHit(fixture:b2Fixture, trigger:b2Fixture, contact:b2Contact, colliding:Boolean):void{
+			if(fixture.IsSensor()) return;
 			if(trigger == _leftFootSensor) {
 				_numFootLeft += (colliding ? 1:-1);
 				_footLeft = (_numFootLeft > 0)

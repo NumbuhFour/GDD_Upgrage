@@ -14,12 +14,13 @@
 	import flash.display.Graphics;
 	import com.upgrage.*;
 	import flash.utils.Dictionary;
+	import Box2D.Dynamics.b2Body;
+	import com.upgrage.events.ContactEvent;
 	
 	public class PhysicsWorld extends MovieClip{
 		
 		public static const DONE_LOADING:String = "DoneLoadingWorld";
 		public static const TICK_WORLD:String = "TickWorld";
-		public static const APPLY_GRAVITY:String = "DoGravity";
 		public static const TRIGGER_CONTACT:String = "TriggerContact";
 
 		public static const DEFAULT_GRAVITY:b2Vec2 = new b2Vec2(0,10);
@@ -27,11 +28,13 @@
 		public static var DEBUG:Boolean = true;
 		private var _wasQDown:Boolean = false;
 		private var _wasPDown:Boolean = false;
+		private var _wasMDown:Boolean = false;
 		private var dbg:b2DebugDraw;
 		private var level:uint;
 		
 		private var _scripts:Vector.<ScriptEvent>;
 		private var _events:Vector.<CustomEvent>;
+		private var _bodiesToRemove:Vector.<b2Body>;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -49,6 +52,7 @@
 		
 		private function start():void{
 
+			_bodiesToRemove = new Vector.<b2Body>();
 			_world = new b2World(new b2Vec2(), true);
 			_collisionHandler = new CollisionHandler(this);
 			_world.SetContactListener(_collisionHandler);
@@ -119,8 +123,12 @@
 				}
 				//_world.ClearForces();
 				_world.Step(stepTime,10,10);
-				this.dispatchEvent(new Event(APPLY_GRAVITY));
 				this.dispatchEvent(new Event(TICK_WORLD));
+				
+				for each (var b:b2Body in _bodiesToRemove){
+					_world.DestroyBody(b);
+				}
+				_bodiesToRemove = new Vector.<b2Body>()
 			}
 			
 			/*if(parent == null || MovieClip(parent).currentFrame != _currentFrame){
@@ -170,6 +178,9 @@
 					((parent.parent as MovieClip).getChildByName("menu") as PauseMenu).show();
 			}
 			_wasQDown = Keyboarder.keyIsDown(Keyboard.Q);
+			_wasMDown = Keyboarder.keyIsDown(Keyboard.M);
+			_wasPDown = Keyboarder.keyIsDown(Keyboard.P);
+
 			if(DEBUG) _world.DrawDebugData();
 			else dbg.GetSprite().graphics.clear();
 		}
@@ -209,11 +220,23 @@
 				_hitExit = true;
 			}
 		}
-		
+
 		public function cleanup(){
 			if (parent.getChildByName("phys_player"))
 					(parent.getChildByName("phys_player") as PPlayer).clearListeners();
 			ScriptParser.parser.CurrLevel = 0;
+		}
+		
+		public function addObjectToLevel(obj:PhysicsObj):void{
+			if(obj.parent == null){
+				parent.addChild(obj);
+			}
+			obj.setInitialWorld(this);
+			this.dispatchEvent(new Event(DONE_LOADING));
+		}
+		
+		public function removeBody(body:b2Body):void{
+			this._bodiesToRemove.push(body);
 		}
 		
 		public function pause():void { _paused = true; }

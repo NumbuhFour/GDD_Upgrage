@@ -13,6 +13,7 @@
 	import Box2D.Dynamics.b2FixtureDef;
 	import Box2D.Dynamics.Contacts.b2Contact;
 	import flash.utils.Dictionary;
+	import com.upgrage.components.Projectile;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
 	
@@ -80,7 +81,6 @@
 		public function PPlayer() {
 			_upgrades = new Dictionary();
 			initProperties();
-			trace("adding mouse listeners");
 			stage.addEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
 			stage.addEventListener(MouseEvent.MOUSE_UP, mouseUp);
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, updateMouse);
@@ -106,6 +106,7 @@
 			
 			_upgrades["rockets"] = true;
 			_upgrades["manhole cover"] = false;
+			_upgrades["rocket speed"] = 5;
 			
 			_upgrades["wall jump"] = true;
 			_upgrades["wall slide"] = true;
@@ -220,6 +221,7 @@
 				if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
 				this._animState = "jump";
 			}
+			
 			/*if(_kDashLeft){TODO
 				if(_kDLReleased) {
 					_body.SetLinearVelocity(new b2Vec2()); //Reset speed
@@ -236,8 +238,18 @@
 			}else if(_hitBelow) _kDRReleased = true;*/
 			
 			if(_upgrades["rockets"] && !_upgrades["manhole cover"] && _clicked && _iterSinceLastClick > 30){
-				//do rockets
+				var bullet:Projectile = new Projectile();
+				this._world.addObjectToLevel(bullet);
+				var fireVector:b2Vec2 = new b2Vec2(_mouseCoords.x / _world.pscale, _mouseCoords.y / _world.pscale);
+				fireVector.Subtract(_body.GetPosition());
+				fireVector.Normalize();
+				fireVector.Multiply(_upgrades["rocket speed"]);
+				bullet.setPositionAndVelocity(_body.GetPosition(), fireVector);
+				var rot:Number = Math.atan2(_mouseCoords.y - this.y, _mouseCoords.x - this.x);
+				bullet.setRotation(rot);
+				_iterSinceLastClick = 0;
 			}
+			_iterSinceLastClick ++;
 			
 			if(!_kUp) this._canJumpAgain = true;
 			this._canWallJump = this._wasOnWall && !_kUp && !_hitBelow; //You have to let go of the up key at least once before jumping off wall
@@ -315,21 +327,32 @@
 		}
 		
 		private function mouseDown(e:MouseEvent){
-			trace("clicked");
+			this._mouseCoords.x = e.stageX;
+			this._mouseCoords.y = e.stageY;
+			recalcMousePos();
 			this._clicked = true;
-			this._iterSinceLastClick = 0;
 		}
 		
 		private function mouseUp(e:MouseEvent){
-			trace("unclicked");
+			this._mouseCoords.x = e.stageX;
+			this._mouseCoords.y = e.stageY;
 			this._clicked = false;
+			recalcMousePos();
 		}
 		
 		private function updateMouse(e:MouseEvent){
-			//trace("mouse moved");
-			this._mouseCoords.x = e.stageX;
-			this._mouseCoords.y = e.stageY;
+			this._mouseCoords.x = e.localX;
+			this._mouseCoords.y = e.localY;
+			this._clicked = e.buttonDown;
+			recalcMousePos();
+
 		}
+		//Adjust for parent's translations
+		private function recalcMousePos(){
+			this._mouseCoords.x -= parent.x;
+			this._mouseCoords.y -= parent.y;
+		}
+
 		
 		public function clearListeners(){
 			stage.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);

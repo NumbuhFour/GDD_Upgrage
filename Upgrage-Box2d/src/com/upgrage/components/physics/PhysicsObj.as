@@ -17,6 +17,8 @@
 	//Required overrides: drawBounds, setup
 	public class PhysicsObj extends UIComponent{
 
+		protected var _isDead:Boolean = false
+		
 		private var _isStatic:Boolean = true;
 		private var _fixedRotation:Boolean = false;
 		private var _density:Number = 10;
@@ -57,7 +59,6 @@
 			_body.SetAngle(rotTemp*(Math.PI/180));
 			
 			_world.addEventListener(PhysicsWorld.TICK_WORLD,onTick);
-			_world.addEventListener(PhysicsWorld.APPLY_GRAVITY,doGravity);
 			//_fixture = _body.CreateFixture(_fixtureDef); //Should be done by child class as they need to set the shape
 			
 			isStatic = isStatic;
@@ -74,6 +75,13 @@
 				this._followingObject.rotation = this.rotation;
 				//updateSelfToGraphics();
 			}
+		}
+		
+		public function kill(){
+			if(followingObject) parent.removeChild(this.followingObject);
+			parent.removeChild(this);
+			_world.removeBody(this._body);
+			this._isDead = true;
 		}
 		
 		protected override function configUI():void {
@@ -113,14 +121,12 @@
 			_body.SetAngle(tempRot * (Math.PI/180));
 		}
 		
-		
-		public function doGravity(e:Event):void{
-			//Apply Gravity
-			//var vel:b2Vec2 = _body.GetLinearVelocity();
-			//_body.SetLinearVelocity(new b2Vec2(vel.x + (1/_world.stepTime) * (_gravity.x)*_body.GetMass(), vel.y + (1/_world.stepTime) * (_gravity.y)*_body.GetMass()));
-			//_body.ApplyForce(new b2Vec2(_gravity.x * this._body.GetMass() * (1/_world.stepTime), _gravity.y * this._body.GetMass() * (1/_world.stepTime)),_body.GetWorldCenter());
-			//b.m_linearVelocity.x += (1 / your_time_step) * (gravity.x);
-			//b.m_linearVelocity.y += (1 / your_time_step) * (gravity.y);
+		public function setPositionAndVelocity(pos:b2Vec2, vel:b2Vec2){
+			this._body.SetPosition(pos);
+			this._body.SetLinearVelocity(vel);
+		}
+		public function setRotation(rad:Number){
+			this._body.SetAngle(rad);
 		}
 		public function onTick(e:Event):void{
 			
@@ -148,6 +154,9 @@
 		
 		public function get followingObject():MovieClip{
 			return this._followingObject;
+		}
+		protected function setFollowingObject(val:MovieClip):void{
+			this._followingObject = val;
 		}
 
 		public function set gravity(grav:b2Vec2):void { this._gravity = grav; }
