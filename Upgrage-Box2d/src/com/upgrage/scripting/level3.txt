@@ -1,1 +1,7 @@
-startTrigger:DIALOG:You seem to be not sucking too bad.
+startTrigger:DIALOG:Being that it is your first day of training, I will reward you with your honorary jetpack!"Press Spacebar to use it.
+startTrigger:UPGRADE:mid air jumps 0
+startTrigger:UPGRADE:jetpack false
+startTrigger:UPGRADE:rockets false
+jetpackTrigger:UPGRADE:jetpack true
+jetpackTrigger:UNLOCK:exit
+exit:DIALOG:Everyone loves a jetpack, and I'm sure you two will become great friends.

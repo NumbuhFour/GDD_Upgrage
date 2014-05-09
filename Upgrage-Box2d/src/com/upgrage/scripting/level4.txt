@@ -1,1 +1,7 @@
-startTrigger:DIALOG:You seem to be not sucking too bad.
+startTrigger:DIALOG:I called Pest Control, but they still haven't shown up."Do you mind taking care of this mess for me?"Here's a rocket launcher to help get rid of them. Click with your mouse to shoot rockets.
+startTrigger:UPGRADE:mid air jumps 0
+startTrigger:UPGRADE:rockets false
+rocketLauncherTrigger:UPGRADE:rockets true
+rocketLauncherTrigger:UNLOCK:exit
+rocketLauncherTrigger:SPRITESWAP:phys_player player_rocket
+exit:DIALOG:Thanks for getting rid of those roaches for me!"You may prove your worth soon enough.

@@ -1,0 +1,6 @@
+startTrigger:DIALOG:Unfortunately, your jetpack has run out of fuel and I don't have money to buy any more."It's ok though, because your next upgrade is even better than a rocket launcher."Go ahead and pick it up!"Also, clean up the rest of the roaches if you can.
+startTrigger:UPGRADE:mid air jumps 0
+startTrigger:UPGRADE:jetpack false
+brickTrigger:UPGRADE:jump force 7
+brickTrigger:UNLOCK:exit
+exit:DIALOG:Let's hope you enjoy those bricks, because you can never take them off!

@@ -1,1 +1,6 @@
-startTrigger:DIALOG:You seem to be not sucking too bad.
+startTrigger:DIALOG:Jumping can't be the only thing you can do."Surely you can wall jump?"It's as easy as pushing the opposite direction when on a wall!
+startTrigger:UPGRADE:mid air jumps 0
+startTrigger:UPGRADE:jetpack false
+startTrigger:UPGRADE:rockets false
+startTrigger:UNLOCK:exit
+exit:DIALOG:I guess that was prety good."I have a present for you in the next room.

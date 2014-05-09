@@ -6,6 +6,7 @@
 	import flash.ui.Keyboard;
 	import com.upgrage.components.physics.PhysicsWorld;
 	import com.upgrage.util.Queue;
+	import flash.events.KeyboardEvent;
 	
 	
 	public class DialogBox extends MovieClip {
@@ -23,9 +24,9 @@
 		}
 		
 		private var _spaceDown:Boolean = false;
-		private function onEnter_Frame(e:Event):void{
-			var down:Boolean = Keyboarder.keyIsDown(Keyboard.SPACE);
-			if(down && !_spaceDown){
+		private function onEnter_Frame(e:KeyboardEvent):void{
+			//var down:Boolean = Keyboarder.keyIsDown(Keyboard.SPACE);
+			if(e.keyCode == Keyboard.SPACE){//down && !_spaceDown){
 				if(_open){
 					if (!_queue.empty){
 						_text = _queue.read();
@@ -34,16 +35,16 @@
 					else{
 						this.gotoAndStop(0);
 						_world.unpause();
-						this.removeEventListener(Event.ENTER_FRAME, onEnter_Frame);
+						stage.removeEventListener(KeyboardEvent.KEY_UP, onEnter_Frame);
 						_text = "";
 					}
 				}
 			}
-			_spaceDown = down;
+			//_spaceDown = down;
 		}
 		
 		public function pushText(text:String):void{
-			this.addEventListener(Event.ENTER_FRAME, onEnter_Frame);
+			stage.addEventListener(KeyboardEvent.KEY_UP, onEnter_Frame);
 			var arr:Array = text.split("\"");
 			for each(var i:String in arr)
 				_queue.write(i);

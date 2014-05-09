@@ -225,6 +225,17 @@
 								}
 								break;
 							case "TIMER": processTimer(script.Command);
+								break;
+							case "SPRITESWAP": {
+								var split:Array = script.Command.split(" ");
+								var sprite:DisplayObject = parent.getChildByName(split[0]);
+								if(sprite && sprite is PhysicsObj){
+									var phys:PhysicsObj = sprite as PhysicsObj;
+									phys.followingObjectName = split[1];
+								}else{
+									trace("Script tries to change the sprite of \"" + split[0] + "\" which is not a Physics object or does not exist");
+								}
+							}
 						}
 					}
 				}

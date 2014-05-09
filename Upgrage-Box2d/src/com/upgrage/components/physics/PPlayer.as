@@ -239,6 +239,7 @@
 			
 			if(_upgrades["rockets"] && !_upgrades["manhole cover"] && _clicked && _iterSinceLastClick > 30){
 				var bullet:Projectile = new Projectile();
+				bullet.x = bullet.y = 10000; //Gett off mah screen
 				this._world.addObjectToLevel(bullet);
 				var fireVector:b2Vec2 = new b2Vec2(_mouseCoords.x / _world.pscale, _mouseCoords.y / _world.pscale);
 				fireVector.Subtract(_body.GetPosition());
@@ -349,8 +350,8 @@
 		}
 		
 		private function updateMouse(e:MouseEvent){
-			this._mouseCoords.x = e.localX;
-			this._mouseCoords.y = e.localY;
+			this._mouseCoords.x = e.stageX;
+			this._mouseCoords.y = e.stageY;
 			this._clicked = e.buttonDown;
 			recalcMousePos();
 
