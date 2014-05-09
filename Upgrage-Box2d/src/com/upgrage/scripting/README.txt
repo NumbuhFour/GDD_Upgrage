@@ -16,6 +16,7 @@ LEVEL_COMPLETE
 UPGRADE
 
 when making new levels, label the level symbol in Game "level". also, label the physicsworld symbol "world"
+
 levels.txt specifies which levels to load, and they will be loaded in that order.
 
 _upgrades["max speed"] = 7;

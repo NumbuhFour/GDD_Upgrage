@@ -3,4 +3,5 @@ startTrigger:UPGRADE:mid air jumps 0
 startTrigger:UPGRADE:rockets false
 rocketLauncherTrigger:UPGRADE:rockets true
 rocketLauncherTrigger:UNLOCK:exit
+rocketLauncherTrigger:SPRITESWAP:phys_player player_rocket
 exit:DIALOG:Thanks for getting rid of those roaches for me!"You may prove your worth soon enough.
