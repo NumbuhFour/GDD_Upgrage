@@ -70,6 +70,7 @@
 		}
 		public function onShot(e:ShotEvent):void{
 			if(e.hit.GetBody() == this._body){
+				_world.registerDeath();				
 				this.kill();
 			}
 		}
