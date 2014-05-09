@@ -30,7 +30,7 @@
 				secUserData = fixtureA.GetBody().GetUserData();
 				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
-					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true));
+					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true,fixtureA));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureA,fixtureB,contact,true);
 				}
@@ -40,7 +40,7 @@
 				secUserData = fixtureB.GetBody().GetUserData();
 				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
-					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true));
+					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true,fixtureB));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureB,fixtureA,contact,true);
 				}
@@ -60,7 +60,7 @@
 				secUserData = fixtureA.GetBody().GetUserData();
 				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
-					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false));
+					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false,fixtureA));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureA, fixtureB,contact,false);
 				}
@@ -70,7 +70,7 @@
 				secUserData = fixtureB.GetBody().GetUserData();
 				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
-					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false));
+					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,false,fixtureB));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureB, fixtureA,contact,false);
 				}
