@@ -70,14 +70,16 @@
 			_body.SetAngularVelocity(_startVelR);
 			
 			if(!this.isLivePreview && this._followingObject != null) {
-				this._followingObject.width = this.width;
-				this._followingObject.height = this.height;
-				this._followingObject.rotation = this.rotation;
+				//var ratio:Number = _followingObject.height / _followingObject.width;
+				//this._followingObject.width = this.width;
+				//this._followingObject.height = this.width*ratio;
+				//this._followingObject.rotation = this.rotation;
 				//updateSelfToGraphics();
 			}
 		}
 		
 		public function kill(){
+			if(_isDead) return;
 			if(followingObject) parent.removeChild(this.followingObject);
 			parent.removeChild(this);
 			_world.removeBody(this._body);
@@ -115,8 +117,8 @@
 			
 			var tempRot = _followingObject.rotation; //Push-pop rotation because width/height are affected otherwise
 			_followingObject.rotation = 0;
-			this.width = _followingObject.width/_world.pscale;
-			this.height = _followingObject.height/_world.pscale;
+			/*this.width = _followingObject.width/_world.pscale;
+			this.height = _followingObject.height/_world.pscale;*/
 			this.rotation = _followingObject.rotation = tempRot; 
 			_body.SetAngle(tempRot * (Math.PI/180));
 		}
@@ -247,13 +249,36 @@
 		[Inspectable(name="Graphical Component", type=String, defaultValue="")]
 		public function set followingObjectName(val:String):void{
 			_followingObjectName = val;
+			var hadSprite:Boolean = false; //if the sprite is getting swapped
+			var last:MovieClip = null;
+			if(_followingObject != null){
+				parent.removeChild(_followingObject);
+				last = this._followingObject;
+				_followingObject = null;
+				hadSprite = true;
+			}
 			try{
 				this._followingObject = (parent.getChildByName(_followingObjectName) as GraphicalObject).duplicate();//parent.getChildByName(_followingObjectName) as MovieClip;
 			}catch(e:Error){
 				trace("Error: Following object must extend base class com.upgrage.components.GraphicalObject!");
 			}
+			if(!hadSprite){
+				this.updateSelfToGraphics();
+			}else if(_followingObject){
+				//var ratio:Number = _followingObject.height / _followingObject.width;
+				//this._followingObject.width = this.width;
+				//this._followingObject.height = this.width*ratio;
+				//this._followingObject.rotation = this.rotation;
+				
+				_followingObject.scaleX = last.scaleX;
+				_followingObject.scaleY = last.scaleY;
+				if(last.isPlaying){
+					_followingObject.gotoAndPlay(last.currentFrame);
+				}else{
+					_followingObject.gotoAndStop(last.currentFrame);
+				}
+			}
 			//this._followingObject = this._followingObject.duplicateMovieClip("clip-" + _followingObject.name + ":r" + Math.round(Math.random()*1000), parent.numChildren);
-			this.updateSelfToGraphics();
 		}
 		public function get followingObjectName():String { return _followingObjectName; }
 

@@ -171,7 +171,7 @@
 				}
 				if(!_hitRight) this.followingObject.scaleX = -Math.abs(this.followingObject.scaleX);//Flip player
 			}
-			if(this._isOnWall && _upgrades["wall jump"] ){ //Jump Off Wall
+			if(this._isOnWall && _upgrades["wall jump"] == true ){ //Jump Off Wall
 				if((_kUp && _canWallJump) || (_hitLeft && _kRight) || (_hitRight && _kLeft)){ //Jump when up is pressed or when key pressed is opposite of wall direction
 					var jumpOff:Number = _upgrades["jump force"]*_upgrades["wall jump up percentage"];
 					var pushOff:Number = 0;
@@ -190,7 +190,7 @@
 					if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
 					this._animState = "jump";
 				}
-			}else if(_kUp && _upgrades["jump"] ){ //jump & double jump
+			}else if(_kUp && _upgrades["jump"] == true){ //jump & double jump
 				//var jetpack:Boolean = _upgrades["jetpack"];
 				if(/* !jetpack && */(_hitBelow || _midAirJumpsLeft > 0)){
 					var doJump:Boolean = false;
@@ -216,7 +216,7 @@
 				}
 			}
 			
-			if(_upgrades["jetpack"] && _kSpace && _body.GetLinearVelocity().y >-_upgrades["max jetpack speed"]){ //JETPACK
+			if(_upgrades["jetpack"] == true && _kSpace && _body.GetLinearVelocity().y >-_upgrades["max jetpack speed"]){ //JETPACK
 				_body.ApplyImpulse(new b2Vec2(0,-_upgrades["jetpack accel"]*_body.GetMass()), _body.GetWorldCenter());
 				if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
 				this._animState = "jump";
@@ -239,6 +239,7 @@
 			
 			if(_upgrades["rockets"] && !_upgrades["manhole cover"] && _clicked && _iterSinceLastClick > 30){
 				var bullet:Projectile = new Projectile();
+				bullet.x = bullet.y = 10000; //Gett off mah screen
 				this._world.addObjectToLevel(bullet);
 				var fireVector:b2Vec2 = new b2Vec2(_mouseCoords.x / _world.pscale, _mouseCoords.y / _world.pscale);
 				fireVector.Subtract(_body.GetPosition());
@@ -326,6 +327,14 @@
 			if(_hitBelow) _canWallSlide = true;
 		}
 		
+		public function setUpgrade(key:String, val:String) { 
+			trace("type: " + typeof(_upgrades[key]));			
+			if (_upgrades[key] is Boolean)
+				_upgrades[key] = (val == "true"); 
+			else 
+				_upgrades[key] = val;
+			trace(key + " : " + val); }
+		
 		private function mouseDown(e:MouseEvent){
 			this._mouseCoords.x = e.stageX;
 			this._mouseCoords.y = e.stageY;
@@ -341,10 +350,11 @@
 		}
 		
 		private function updateMouse(e:MouseEvent){
-			this._mouseCoords.x = e.localX;
-			this._mouseCoords.y = e.localY;
+			this._mouseCoords.x = e.stageX;
+			this._mouseCoords.y = e.stageY;
 			this._clicked = e.buttonDown;
 			recalcMousePos();
+
 		}
 		//Adjust for parent's translations
 		private function recalcMousePos(){

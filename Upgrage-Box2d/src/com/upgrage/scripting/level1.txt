@@ -1,3 +1,6 @@
 startTrigger:DIALOG:Oh, fuck. It's you."I didn't expect you to be here so early. What is it, 7? 8?"..."Well, fuck me. Time to start drinking.
+startTrigger:UPGRADE:mid air jumps 0
+startTrigger:UPGRADE:jetpack false
+startTrigger:UPGRADE:rockets false
 startTrigger:UNLOCK:exit
 exit:DIALOG:Oh wow, impressive."Not.
