@@ -192,7 +192,7 @@
 				}
 			}else if(_kUp && _upgrades["jump"] == true){ //jump & double jump
 				//var jetpack:Boolean = _upgrades["jetpack"];
-				if(/* !jetpack && */(_hitBelow || _midAirJumpsLeft > 0)){
+				if(/* !jetpack && */(_hitBelow || _midAirJumpsLeft > 0 || _midAirJumpsLeft <= -1)){
 					var doJump:Boolean = false;
 					if(_hitBelow && this._canJumpAgain) {
 						this._midAirJumpsLeft = _upgrades["mid air jumps"];
@@ -260,7 +260,7 @@
 		private function cleanAnimations():void{
 						
 			//Setting animation to idle when idle
-			if(this._animState != "idle" && _hitBelow && (!_kLeft && !_kRight || this._animState != "run") && this._body.GetLinearVelocity().LengthSquared() < 10){
+			if(this._animState != "idle" && _hitBelow && ((!_kLeft && !_kRight) || this._animState != "run") && this._body.GetLinearVelocity().LengthSquared() < 10){
 				this.followingObject.gotoAndPlay("idle");
 				this._animState = "idle";
 			}
@@ -281,6 +281,11 @@
 				this._animState = "idle";
 				this.followingObject.gotoAndPlay("idle");
 			}
+			
+			/*if(this._animState != "run" && _hitBelow && this._body.GetLinearVelocity().LengthSquared() >= 10){
+				this._animState = "run";
+				this.followingObject.gotoAndPlay("run");
+			}*/
 		}
 		
 		private function applyHorizontalDrag():void {

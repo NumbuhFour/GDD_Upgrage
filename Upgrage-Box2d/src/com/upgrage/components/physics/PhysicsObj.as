@@ -163,6 +163,7 @@
 
 		public function set gravity(grav:b2Vec2):void { this._gravity = grav; }
 		public function get gravity():b2Vec2 { return this._gravity; }
+		public function get body():b2Body { return this._body; }
 		
 		// Draw object's physical shape boundaries (abstract)
 		protected function drawBounds():void {}
@@ -257,10 +258,12 @@
 				_followingObject = null;
 				hadSprite = true;
 			}
-			try{
-				this._followingObject = (parent.getChildByName(_followingObjectName) as GraphicalObject).duplicate();//parent.getChildByName(_followingObjectName) as MovieClip;
-			}catch(e:Error){
-				trace("Error: Following object must extend base class com.upgrage.components.GraphicalObject!");
+			if(_followingObjectName){
+				try{
+					this._followingObject = (parent.getChildByName(_followingObjectName) as GraphicalObject).duplicate();//parent.getChildByName(_followingObjectName) as MovieClip;
+				}catch(e:Error){
+					trace("Error: Following object must extend base class com.upgrage.components.GraphicalObject! " + _followingObjectName + " " + this);
+				}
 			}
 			if(!hadSprite){
 				this.updateSelfToGraphics();
