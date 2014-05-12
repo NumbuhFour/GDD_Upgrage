@@ -13,9 +13,11 @@
 	import flash.display.Sprite;
 	import flash.display.Graphics;
 	import com.upgrage.*;
+	import com.upgrage.components.*;
 	import flash.utils.Dictionary;
 	import Box2D.Dynamics.b2Body;
 	import com.upgrage.events.ContactEvent;
+	import flash.text.TextField;
 	
 	public class PhysicsWorld extends MovieClip{
 		
@@ -36,7 +38,7 @@
 		private var _scripts:Vector.<ScriptEvent>;
 		private var _events:Vector.<CustomEvent>;
 		private var _bodiesToRemove:Vector.<b2Body>;
-		private var _timer:TimerObject = null;
+		private var _timer:LevelTimer;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -136,7 +138,7 @@
 				}
 				_bodiesToRemove = new Vector.<b2Body>()
 				if (_timer.isRunning)
-					((parent.getChildByName("timer") as MovieClip).getChildByName("textField") as TextField).text = _timer.SecondsLeft;
+					((parent.getChildByName("timer") as MovieClip).getChildByName("textField") as TextField).text = _timer.SecondsLeft.toString();
 			}
 			
 			/*if(parent == null || MovieClip(parent).currentFrame != _currentFrame){
@@ -219,7 +221,8 @@
 								if ((script.Command) == "enemyLock"){
 									if (_numEnemies <= 0)
 										(parent.getChildByName(script.TriggerID) as PTrigger).unlock();
-								else
+								}
+								else{
 									(parent.getChildByName(script.Command) as PTrigger).unlock();
 									trace(script.Command + " unlocked");}
 								}
@@ -254,6 +257,19 @@
 		public function registerDeath(){
 				_numEnemies --;
 		}
+		
+		private function processTimer(cmd:String){
+			var arr:Array = cmd.split(" ");
+			if (arr[0] == "setTime")
+				_timer.StartTime == arr[1];
+			else if (arr[0] == "start")
+				_timer.start();
+			else if (arr[0] == "reset")
+				_timer.reset();
+			else if (arr[0] == "stop")
+				_timer.pause();
+			
+		}
 
 		public function cleanup(){
 			if (parent.getChildByName("phys_player"))
@@ -274,7 +290,7 @@
 		}
 		
 		public function pause():void { _paused = true; _timer.pause();}
-		public function unpause():void { _paused = false; _timer.start(); }
+		public function unpause():void { _paused = false; _timer.unpause(); }
 
 
 		public function get pscale():Number { return 40; } // Pixels per meter ratio for the physics engine
