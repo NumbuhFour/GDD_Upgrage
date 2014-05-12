@@ -13,10 +13,12 @@
 		private var _currentTime:Number;
 		private var _running:Boolean;
 		private var _timing:Boolean;
+		private var _clockMode:Boolean;
 		
 		public function get StartTime():int { return _totalTime; }
 		public function set StartTime(time:int) { _totalTime = time; }
 		public function get SecondsLeft():Number { return _currentTime*1000; }
+		public function get ClockMode():Boolean { return _clockMode; }
 		public function get isRunning():Boolean { return _timing; }
 		
 		public function LevelTimer() {
@@ -25,6 +27,7 @@
 			_timer.start();
 			_paused = true;
 			_timing = false;
+			_clockMode = false;
 		}
 		
 		private function tick(e:Event){

@@ -32,6 +32,7 @@
 		private var _wasPDown:Boolean = false;
 		private var _wasMDown:Boolean = false;
 		private var dbg:b2DebugDraw;
+		private var _underwater:Boolean = false;
 		private var level:uint;
 		private var _numEnemies:int;
 		
@@ -39,6 +40,7 @@
 		private var _events:Vector.<CustomEvent>;
 		private var _bodiesToRemove:Vector.<b2Body>;
 		private var _timer:LevelTimer;
+		private var _bubbles:Vector.<Bubble>;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -118,6 +120,7 @@
 			_stepTimer.addEventListener(TimerEvent.TIMER,onTick);
 			_stepTimer.start();
 			this.addEventListener(TRIGGER_CONTACT, onContact);
+			this.addEventListener(
 		}
 		
 		private function onTick(e:TimerEvent):void {
@@ -137,8 +140,10 @@
 					_world.DestroyBody(b);
 				}
 				_bodiesToRemove = new Vector.<b2Body>()
-				if (_timer.isRunning)
+				if (_timer.isRunning && _timer.ClockMode)
 					((parent.getChildByName("timer") as MovieClip).getChildByName("textField") as TextField).text = _timer.SecondsLeft.toString();
+				if (_underwater)
+					bubbles();
 			}
 			
 			/*if(parent == null || MovieClip(parent).currentFrame != _currentFrame){
@@ -269,6 +274,17 @@
 			else if (arr[0] == "stop")
 				_timer.pause();
 			
+		}
+		
+		//wont be called yet, don't worry about it
+		private function bubbles(){
+			//update bubbles
+			var placeholder:int = 100;
+			for each (var bubble:Bubble in _bubbles)
+				bubble.tick(placeholder);
+			//update time
+			//check for number of bubbles compared to time
+			//if bubbles * time < 5, spawn bubble, add to list
 		}
 
 		public function cleanup(){
