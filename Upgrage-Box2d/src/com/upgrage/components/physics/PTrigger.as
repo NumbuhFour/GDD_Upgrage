@@ -11,6 +11,7 @@
 		private var _triggerID:String = "default";
 		private var _command:String;
 		private var _disabled:Boolean = false;
+		private var _locks:int = 0;
 		
 		public function get disabled():Boolean { return _disabled; }
 		public function set disabled(val:Boolean):void { _disabled = val; }
@@ -48,6 +49,17 @@
 			_fixtureDef.shape = _shape;
 			_fixtureDef.isSensor = true;
 			_fixture = _body.CreateFixture(_fixtureDef);
+		}
+		
+		public function unlock(){
+			_locks --;
+			if (_locks == 0)
+				this._disabled = false;
+		}
+		
+		public function lock(){
+			_locks ++;
+			this._disabled = true;
 		}
 		
 		

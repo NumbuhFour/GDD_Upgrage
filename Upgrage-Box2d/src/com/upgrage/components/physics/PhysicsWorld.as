@@ -13,9 +13,11 @@
 	import flash.display.Sprite;
 	import flash.display.Graphics;
 	import com.upgrage.*;
+	import com.upgrage.components.*;
 	import flash.utils.Dictionary;
 	import Box2D.Dynamics.b2Body;
 	import com.upgrage.events.ContactEvent;
+	import flash.text.TextField;
 	
 	public class PhysicsWorld extends MovieClip{
 		
@@ -30,11 +32,15 @@
 		private var _wasPDown:Boolean = false;
 		private var _wasMDown:Boolean = false;
 		private var dbg:b2DebugDraw;
+		private var _underwater:Boolean = false;
 		private var level:uint;
+		private var _numEnemies:int;
 		
 		private var _scripts:Vector.<ScriptEvent>;
 		private var _events:Vector.<CustomEvent>;
 		private var _bodiesToRemove:Vector.<b2Body>;
+		private var _timer:LevelTimer;
+		private var _bubbles:Vector.<Bubble>;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -63,11 +69,12 @@
 			_scripts = ScriptParser.parser.loadNextLevel();
 			for each (var script:ScriptEvent in _scripts)
 				if (script.ScriptType == "UNLOCK"){
-					var trig:PTrigger = (parent.getChildByName(script.Command) as PTrigger);
-					trace("Command: " + script.Command + "\tTrigger: " + trig);
-					(parent.getChildByName(script.Command) as PTrigger).disabled = true;
+					if (script.Command == "enemyLock"){
+						(parent.getChildByName(script.TriggerID) as PTrigger).lock();
+					}
+					else
+						(parent.getChildByName(script.Command) as PTrigger).lock();
 				}
-			
 		}
 		
 		private function onAdded(e:Event):void {
@@ -90,6 +97,7 @@
 			this.removeEventListener(Event.ENTER_FRAME,onEnter_Frame);
 			_currentFrame = MovieClip(parent).currentFrame;
 			stage.focus = stage;
+			_numEnemies = 0;
 			var i:int =0;
 			for(i=0; i < parent.numChildren; i++){
 				var c:DisplayObject = parent.getChildAt(i);
@@ -99,17 +107,20 @@
 				}
 				else if (c is CustomEvent)
 					_events.push(c);
+				else if (c is Enemy)
+					_numEnemies ++;
 			}
 			
 			loadScripts();
 			
-			
+			_timer = new LevelTimer();
 			
 			this.dispatchEvent(new Event(DONE_LOADING));
 			_stepTimer = new Timer(stepTime);
 			_stepTimer.addEventListener(TimerEvent.TIMER,onTick);
 			_stepTimer.start();
 			this.addEventListener(TRIGGER_CONTACT, onContact);
+			//this.addEventListener(
 		}
 		
 		private function onTick(e:TimerEvent):void {
@@ -129,6 +140,10 @@
 					_world.DestroyBody(b);
 				}
 				_bodiesToRemove = new Vector.<b2Body>()
+				if (_timer.isRunning && _timer.ClockMode)
+					((parent.getChildByName("timer") as MovieClip).getChildByName("textField") as TextField).text = _timer.SecondsLeft.toString();
+				if (_underwater)
+					bubbles();
 			}
 			
 			/*if(parent == null || MovieClip(parent).currentFrame != _currentFrame){
@@ -207,7 +222,18 @@
 								(parent.getChildByName("phys_player") as PPlayer).setUpgrade(arr[0], arr[1]); 
 								trace((parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]]); }
 								break;
-							case "UNLOCK": {(parent.getChildByName(script.Command) as PTrigger).disabled = false; trace(script.Command + " unlocked");}
+							case "UNLOCK": {
+								if ((script.Command) == "enemyLock"){
+									if (_numEnemies <= 0)
+										(parent.getChildByName(script.TriggerID) as PTrigger).unlock();
+								}
+								else{
+									(parent.getChildByName(script.Command) as PTrigger).unlock();
+									trace(script.Command + " unlocked");}
+								}
+								break;
+							case "TIMER": processTimer(script.Command);
+								break;
 							case "SPRITESWAP": {
 								var split:Array = script.Command.split(" ");
 								var sprite:DisplayObject = parent.getChildByName(split[0]);
@@ -223,7 +249,7 @@
 				}
 				
 				if(scriptFound){
-					(parent.getChildByName(e.triggerID) as PTrigger).disabled = true;
+					(parent.getChildByName(e.triggerID) as PTrigger).lock();
 				}
 			}
 			if(e.triggerID == "exit" && !_hitExit){
@@ -232,11 +258,39 @@
 				_hitExit = true;
 			}
 		}
+		
+		public function registerDeath(){
+				_numEnemies --;
+		}
+		
+		private function processTimer(cmd:String){
+			var arr:Array = cmd.split(" ");
+			if (arr[0] == "setTime")
+				_timer.StartTime == arr[1];
+			else if (arr[0] == "start")
+				_timer.start();
+			else if (arr[0] == "reset")
+				_timer.reset();
+			else if (arr[0] == "stop")
+				_timer.pause();
+			
+		}
+		
+		//wont be called yet, don't worry about it
+		private function bubbles(){
+			//update bubbles
+			var placeholder:int = 100;
+			for each (var bubble:Bubble in _bubbles)
+				bubble.tick(placeholder);
+			//update time
+			//check for number of bubbles compared to time
+			//if bubbles * time < 5, spawn bubble, add to list
+		}
 
 		public function cleanup(){
 			if (parent.getChildByName("phys_player"))
 					(parent.getChildByName("phys_player") as PPlayer).clearListeners();
-			//ScriptParser.parser.CurrLevel = 0;
+			_timer.cleanup();
 		}
 		
 		public function addObjectToLevel(obj:PhysicsObj):void{
@@ -251,8 +305,8 @@
 			this._bodiesToRemove.push(body);
 		}
 		
-		public function pause():void { _paused = true; }
-		public function unpause():void { _paused = false; }
+		public function pause():void { _paused = true; _timer.pause();}
+		public function unpause():void { _paused = false; _timer.unpause(); }
 
 
 		public function get pscale():Number { return 40; } // Pixels per meter ratio for the physics engine
