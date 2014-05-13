@@ -25,18 +25,22 @@
 		
 		//Body
 		private var _torsoShape:b2Shape;
+		private var _torsoShapeShrunk:b2Shape;
 		private var _torsoFix:b2Fixture;
 		private var _abdominShape:b2Shape;
 		private var _abdominFix:b2Fixture;
 		
 		//Sensors, they are just triggers to detect when player is hitting walls/floors
 		private var _headSenShape:b2PolygonShape;
+		private var _headSenShapeShrunk:b2PolygonShape;
 		private var _headSenFix:b2Fixture;
 		private var _feetSenShape:b2PolygonShape;
 		private var _feetSenFix:b2Fixture;
 		private var _leftSenShape:b2PolygonShape;
+		private var _leftSenShapeShrunk:b2PolygonShape;
 		private var _leftSenFix:b2Fixture;
 		private var _rightSenShape:b2PolygonShape;
+		private var _rightSenShapeShrunk:b2PolygonShape;
 		private var _rightSenFix:b2Fixture;
 		
 		//Collisions
@@ -57,6 +61,7 @@
 		private var _kSpace:Boolean = false;
 		private var _kDashLeft:Boolean = false;
 		private var _kDashRight:Boolean = false;
+		private var _kShift:Boolean = false;
 		private var _clicked:Boolean = false;
 		private var _iterSinceLastClick:uint = 0;
 		private var _mouseCoords:Point = new Point();
@@ -75,6 +80,8 @@
 		private var _kDRReleased:Boolean = true; //DashKey Left released
 		private var _dashCountdown:Number = 0;
 		private var _dashLockY:Number = 0; //Y position to set player while locked
+		
+		private var _crouching:Boolean = false;
 		
 		private var _animState:String = "idle";
 		
@@ -111,6 +118,10 @@
 			_upgrades["wall jump"] = true;
 			_upgrades["wall slide"] = true;
 			_upgrades["jump"] = true;
+			
+			_upgrades["can crouch"] = true;
+			_upgrades["crouch speed percent"] = 0.8;
+			_upgrades["crouch height percent"] = 0.8;
 		}
 		
 		protected override function updateSelfToGraphics():void {
@@ -141,6 +152,7 @@
 			_kSpace = Keyboarder.keyIsDown(Keyboard.SPACE);
 			_kDashLeft = Keyboarder.keyIsDown(Keyboard.Q);
 			_kDashRight = Keyboarder.keyIsDown(Keyboard.E);
+			_kShift = Keyboarder.keyIsDown(Keyboard.SHIFT);
 		
 			
 			
@@ -154,19 +166,37 @@
 		}
 		
 		private function takeInput():void{
+			this.followingObject.visible = false;
 			var currentSpeedSq:Number = _body.GetLinearVelocity().LengthSquared();
 			
-			if(_kRight && !_hitRight && currentSpeedSq < _upgrades["max speed"]*_upgrades["max speed"]){
-				_body.ApplyImpulse(new b2Vec2((_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])*_body.GetMass(),0),new b2Vec2());
+			if(!this._crouching && this._kShift && this._upgrades["can crouch"] && this._hitBelow){
+				this._crouching = true;
+				if(this._animState == "run") this.followingObject.gotoAndPlay("crouch_walk");
+				else if(this._animState == "idle") this.followingObject.gotoAndStop("crouch");
+				this.shrinkHitbox();
+			}else if(this._crouching && (!this._kShift || !this._hitBelow || !this._upgrades["can crouch"])){
+				if(this._animState == "run") this.followingObject.gotoAndPlay("run");
+				else if(this._animState == "idle") this.followingObject.gotoAndStop("idle");
+				this._crouching = false;
+				this.resetHitbox();
+			}
+			
+			var maxSpeed = _upgrades["max speed"] * (_crouching ? _upgrades["crouch speed percent"]:1);
+			if(_kRight && !_hitRight && currentSpeedSq < maxSpeed*maxSpeed){
+				_body.ApplyImpulse(new b2Vec2((_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])
+												*(_crouching ? _upgrades["crouch speed percent"]:1)
+												*_body.GetMass(),0),new b2Vec2());
 				if(this._animState != "run" && _hitBelow && !_hitLeft) {
-					this.followingObject.gotoAndPlay("run");
+					this.followingObject.gotoAndPlay(this._crouching ? "crouch_walk" : "run");
 					this._animState = "run";
 				}
 				if(!_hitLeft) this.followingObject.scaleX = Math.abs(this.followingObject.scaleX);//Flip player
-			}if(_kLeft && !_hitLeft && currentSpeedSq < _upgrades["max speed"]*_upgrades["max speed"]){
-				_body.ApplyImpulse(new b2Vec2(-(_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])*_body.GetMass(),0),new b2Vec2());
+			}if(_kLeft && !_hitLeft && currentSpeedSq < maxSpeed*maxSpeed){
+				_body.ApplyImpulse(new b2Vec2(-(_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])
+												*(_crouching ? _upgrades["crouch speed percent"]:1)
+												*_body.GetMass(),0),new b2Vec2());
 				if(this._animState != "run" && _hitBelow && !_hitRight) {
-					this.followingObject.gotoAndPlay("run");
+					this.followingObject.gotoAndPlay(this._crouching ? "crouch_walk" : "run");
 					this._animState = "run";
 				}
 				if(!_hitRight) this.followingObject.scaleX = -Math.abs(this.followingObject.scaleX);//Flip player
@@ -261,7 +291,7 @@
 						
 			//Setting animation to idle when idle
 			if(this._animState != "idle" && _hitBelow && ((!_kLeft && !_kRight) || this._animState != "run") && this._body.GetLinearVelocity().LengthSquared() < 10){
-				this.followingObject.gotoAndPlay("idle");
+				this.followingObject.gotoAndPlay(this._crouching ? "crouch" : "idle");
 				this._animState = "idle";
 			}
 
@@ -279,7 +309,7 @@
 			
 			if(this._animState == "run" && _kLeft == _kRight){
 				this._animState = "idle";
-				this.followingObject.gotoAndPlay("idle");
+				this.followingObject.gotoAndPlay(this._crouching ? "crouch" : "idle");
 			}
 			
 			/*if(this._animState != "run" && _hitBelow && this._body.GetLinearVelocity().LengthSquared() >= 10){
@@ -372,6 +402,46 @@
 			stage.removeEventListener(MouseEvent.MOUSE_DOWN, mouseDown);
 			stage.removeEventListener(MouseEvent.MOUSE_UP, mouseUp);
 			stage.removeEventListener(MouseEvent.MOUSE_MOVE, updateMouse);
+		}
+		//Crouch
+		private function shrinkHitbox():void{
+			this._body.DestroyFixture(this._torsoFix);
+			if(!this._torsoShapeShrunk) {
+				var hei:Number = this.height/_world.pscale;
+				var wid:Number = this.width/_world.pscale;
+				var rad:Number = wid/2;
+				var bHei:Number = (hei*_upgrades["crouch height percent"]-rad);
+				var senWid:Number = 0.02;
+				var senShrink:Number = 0.95; //How much smaller the sensor is than the player's dimensions
+				
+				this._torsoShapeShrunk = new b2PolygonShape();
+				(_torsoShapeShrunk as b2PolygonShape).SetAsOrientedBox(wid/2*0.98,bHei/2,new b2Vec2(0,(hei/2-rad)-bHei/2),0);
+				
+				_headSenShapeShrunk = new b2PolygonShape();
+				_headSenShapeShrunk.SetAsOrientedBox(wid/2*senShrink,senWid,new b2Vec2(0,(hei/2-rad)-bHei-senWid*2));
+			}
+			this._body.DestroyFixture(this._torsoFix);
+			var torsoFixDef:b2FixtureDef = new b2FixtureDef();
+			torsoFixDef.shape = this._torsoShapeShrunk;
+			this._torsoFix = this._body.CreateFixture(torsoFixDef);
+
+			this._body.DestroyFixture(this._headSenFix);
+			var headFixDef:b2FixtureDef = new b2FixtureDef();
+			headFixDef.shape = this._headSenShapeShrunk;
+			this._headSenFix = this._body.CreateFixture(headFixDef);
+			
+		}
+		//Release crouch
+		private function resetHitbox():void {
+			this._body.DestroyFixture(this._torsoFix);
+			var torsoFixDef:b2FixtureDef = new b2FixtureDef();
+			torsoFixDef.shape = this._torsoShape;
+			this._torsoFix = this._body.CreateFixture(torsoFixDef);
+			
+			this._body.DestroyFixture(this._headSenFix);
+			var headFixDef:b2FixtureDef = new b2FixtureDef();
+			headFixDef.shape = this._headSenShape;
+			this._headSenFix = this._body.CreateFixture(headFixDef);
 		}
 		
 		protected override function setup(e:Event):void { //Box2d Physics initialization

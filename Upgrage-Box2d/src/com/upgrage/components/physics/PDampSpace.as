@@ -65,7 +65,7 @@
 		
 		var testBitch:Object;
 		public function onContact(e:ContactEvent):void{
-			if(e.triggerID != this.name) return;
+			if(e.collider.GetBody().GetUserData() != this) return;
 			if(e.fixture.IsSensor()) return; //If colliding with a sensor, ignore
 			
 			var fixture:b2Fixture = e.fixture;
