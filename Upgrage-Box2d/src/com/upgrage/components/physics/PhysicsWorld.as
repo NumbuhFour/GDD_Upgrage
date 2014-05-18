@@ -32,7 +32,8 @@
 		private var _wasPDown:Boolean = false;
 		private var _wasMDown:Boolean = false;
 		private var dbg:b2DebugDraw;
-		private var _underwater:Boolean = false;
+		private var _breathing:Boolean = false;
+		private var _bodyChecked:Boolean; // player body triggers multiple contacts, checks for that
 		private var level:uint;
 		private var _numEnemies:int;
 		
@@ -41,6 +42,7 @@
 		private var _bodiesToRemove:Vector.<b2Body>;
 		private var _timer:LevelTimer;
 		private var _bubbles:Vector.<Bubble>;
+		private var _player:PPlayer;
 		
 		private var _world:b2World;
 		private var _stepTimer:Timer;
@@ -70,10 +72,11 @@
 			for each (var script:ScriptEvent in _scripts)
 				if (script.ScriptType == "UNLOCK"){
 					if (script.Command == "enemyLock"){
-						(parent.getChildByName(script.TriggerID) as PTrigger).lock();
+						(parent.getChildByName(script.TriggerID) as PTrigger).disabled = true;
+						(parent.getChildByName(script.TriggerID) as PTrigger).enemyLocked = true;
 					}
 					else
-						(parent.getChildByName(script.Command) as PTrigger).lock();
+						(parent.getChildByName(script.Command) as PTrigger).disabled = true;
 				}
 		}
 		
@@ -107,12 +110,12 @@
 				}
 				else if (c is CustomEvent)
 					_events.push(c);
-				else if (c is Enemy)
+				if (c is Enemy)
 					_numEnemies ++;
 			}
 			
 			loadScripts();
-			
+			_player = (parent.getChildByName("phys_player") as PPlayer);
 			_timer = new LevelTimer();
 			
 			this.dispatchEvent(new Event(DONE_LOADING));
@@ -126,6 +129,7 @@
 		private function onTick(e:TimerEvent):void {
 			
 			if(!_paused){
+				_bodyChecked = false;
 				if(_hitExit){
 					this._stepTimer.stop();
 					MovieClip(parent).removeChild(dbg.GetSprite());
@@ -140,10 +144,13 @@
 					_world.DestroyBody(b);
 				}
 				_bodiesToRemove = new Vector.<b2Body>()
-				if (_timer.isRunning && _timer.ClockMode)
-					((parent.getChildByName("timer") as MovieClip).getChildByName("textField") as TextField).text = _timer.SecondsLeft.toString();
-				if (_underwater)
-					bubbles();
+				//if (_timer.isRunning && _timer.ClockMode)
+				//	((parent.getChildByName("timer") as MovieClip).getChildByName("textField") as TextField).text = _timer.SecondsLeft.toString();
+				if (_timer.isRunning && !_timer.isPaused){
+					trace(_timer.TimeLeft);					
+					if (!_breathing && _timer.TimeLeft <= 0)
+						die();
+				}
 			}
 			
 			/*if(parent == null || MovieClip(parent).currentFrame != _currentFrame){
@@ -206,57 +213,91 @@
 		private function onContact(e:ContactEvent):void{
 			if(e.colliding) { //Starting contact
 				trace("Trigger hit: " + e.triggerID);
-				var scriptFound:Boolean = false;
-				for each (var script:ScriptEvent in _scripts){
-					if (script.TriggerID == e.triggerID && !(parent.getChildByName(e.triggerID) as PTrigger).disabled){
-						scriptFound = true;
-						switch(script.ScriptType){
-							case "DIALOG": 
-								{DialogBox(getChildByName("dialog")).pushText(script.Command); trace("yagr");
-								break;}
-							case "LEVEL_COMPLETE": cleanup(); _hitExit = true;
-								break;
-							case "UPGRADE": {	
-								var arr:Array = new Array(script.Command.substring(0, script.Command.lastIndexOf(" ")), script.Command.substring(script.Command.lastIndexOf(" ")+1, script.Command.length));			
-								trace(arr);
-								(parent.getChildByName("phys_player") as PPlayer).setUpgrade(arr[0], arr[1]); 
-								trace((parent.getChildByName("phys_player") as PPlayer).Upgrades[arr[0]]); }
-								break;
-							case "UNLOCK": {
-								if ((script.Command) == "enemyLock"){
-									if (_numEnemies <= 0)
-										(parent.getChildByName(script.TriggerID) as PTrigger).unlock();
-								}
-								else{
-									(parent.getChildByName(script.Command) as PTrigger).unlock();
-									trace(script.Command + " unlocked");}
-								}
-								break;
-							case "TIMER": processTimer(script.Command);
-								break;
-							case "SPRITESWAP": {
-								var split:Array = script.Command.split(" ");
-								var sprite:DisplayObject = parent.getChildByName(split[0]);
-								if(sprite && sprite is PhysicsObj){
-									var phys:PhysicsObj = sprite as PhysicsObj;
-									phys.followingObjectName = split[1];
-								}else{
-									trace("Script tries to change the sprite of \"" + split[0] + "\" which is not a Physics object or does not exist");
-								}
-							}
-						}
+				//checks for entering and leaving breathing spaces, deals with timers
+				if (!_player.Upgrades["fishbowl"] && e.collider.GetBody().GetUserData() is PDampSpace && !_bodyChecked){
+					_bodyChecked = true;				
+					if (_player.Upgrades["toaster"])
+						die();
+					if (!_player.Upgrades["gills"] ){
+						_breathing = false;
+						_timer.StartTime = 5000; // timer for drowning
+						_timer.start();
+					}
+					else {
+						_breathing = true;
 					}
 				}
 				
-				if(scriptFound){
-					(parent.getChildByName(e.triggerID) as PTrigger).lock();
+				if(checkScript(e.triggerID)){
+					(parent.getChildByName(e.triggerID) as PTrigger).disabled = true;
 				}
 			}
-			if(e.triggerID == "exit" && !_hitExit){
+			else if (!e.colliding){
+				//checks for entering and leaving breathing spaces, deals with timers
+				if (!_player.Upgrades["fishbowl"] && e.collider.GetBody().GetUserData() is PDampSpace && !_bodyChecked){
+					_bodyChecked = true;					
+					if (_player.Upgrades["gills"] ){
+						_breathing = false;
+						_timer.StartTime = 5000; // timer for "fish out of water"
+						_timer.start();
+					}
+					else {
+						_breathing = true;
+					}
+				}
+			}
+			if(e.triggerID == "exit" && !_hitExit && !(parent.getChildByName("exit") as PTrigger).enemyLocked){
 				//com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
 				cleanup();
 				_hitExit = true;
 			}
+		}
+		
+		private function checkScript(trigger:String):Boolean{
+			var lockTrigger:Boolean = false;
+			for each (var script:ScriptEvent in _scripts){
+				if (script.TriggerID == trigger && (script.Command) == "enemyLock"){
+					if (_numEnemies <= 0){
+						(parent.getChildByName(script.TriggerID) as PTrigger).disabled = false;
+						(parent.getChildByName(script.TriggerID) as PTrigger).enemyLocked = false;
+						lockTrigger = false;
+					}
+				}
+				else if (script.TriggerID == trigger && !(parent.getChildByName(trigger) as PTrigger).disabled && !(parent.getChildByName(trigger) as PTrigger).enemyLocked){
+					lockTrigger = true;
+					switch(script.ScriptType){
+						case "DIALOG": 
+							{DialogBox(getChildByName("dialog")).pushText(script.Command); trace("yagr");
+							break;}
+						case "LEVEL_COMPLETE": cleanup(); _hitExit = true;
+							break;
+						case "UPGRADE": {	
+							var arr:Array = new Array(script.Command.substring(0, script.Command.lastIndexOf(" ")), script.Command.substring(script.Command.lastIndexOf(" ")+1, script.Command.length));			
+							trace(arr);
+							_player.setUpgrade(arr[0], arr[1]); 
+							trace(_player.Upgrades[arr[0]]); }
+							break;
+						case "UNLOCK": {
+								(parent.getChildByName(script.Command) as PTrigger).disabled = false;
+								var trig:PTrigger = (parent.getChildByName(script.Command) as PTrigger);
+								trace(script.Command + " unlocked");}
+							break;
+						case "TIMER": processTimer(script.Command);
+							break;
+						case "SPRITESWAP": {
+							var split:Array = script.Command.split(" ");
+							var sprite:DisplayObject = parent.getChildByName(split[0]);
+							if(sprite && sprite is PhysicsObj){
+								var phys:PhysicsObj = sprite as PhysicsObj;
+								phys.followingObjectName = split[1];
+							}else{
+								trace("Script tries to change the sprite of \"" + split[0] + "\" which is not a Physics object or does not exist");
+							}
+						}
+					}
+				}
+			}
+			return lockTrigger;
 		}
 		
 		public function registerDeath(){
@@ -285,6 +326,10 @@
 			//update time
 			//check for number of bubbles compared to time
 			//if bubbles * time < 5, spawn bubble, add to list
+		}
+		
+		private function die(){
+			trace("ded");
 		}
 
 		public function cleanup(){

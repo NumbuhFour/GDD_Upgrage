@@ -36,6 +36,8 @@
 		protected var _shape:b2Shape;
 		protected var _fixtureDef:b2FixtureDef;
 		protected var _fixture:b2Fixture;
+		protected var _inWater:Boolean = false;
+		protected var _waterHolder:PDampSpace = null;
 		
 		protected var _gravity:b2Vec2 = PhysicsWorld.DEFAULT_GRAVITY;
 
@@ -285,6 +287,20 @@
 		}
 		public function get followingObjectName():String { return _followingObjectName; }
 
+		
+		public function set inWater(val:Boolean):void {
+			this._inWater = val;
+		}
+		public function get inWater():Boolean{
+			return this._inWater;
+		}
+		
+		public function set water(val:PDampSpace):void {
+			this._waterHolder = val;
+		}
+		public function get water():PDampSpace {
+			return this._waterHolder;
+		}
 
 	}
 	

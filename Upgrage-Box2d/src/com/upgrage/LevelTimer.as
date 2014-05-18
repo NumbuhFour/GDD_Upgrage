@@ -17,9 +17,10 @@
 		
 		public function get StartTime():int { return _totalTime; }
 		public function set StartTime(time:int) { _totalTime = time; }
-		public function get SecondsLeft():Number { return _currentTime*1000; }
+		public function get TimeLeft():Number { return _currentTime; }
 		public function get ClockMode():Boolean { return _clockMode; }
 		public function get isRunning():Boolean { return _timing; }
+		public function get isPaused():Boolean { return _paused; }
 		
 		public function LevelTimer() {
 			_timer = new Timer(100);

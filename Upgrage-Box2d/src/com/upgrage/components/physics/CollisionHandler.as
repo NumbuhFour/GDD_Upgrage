@@ -30,7 +30,7 @@
 				secUserData = fixtureA.GetBody().GetUserData();
 				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
-					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true,fixtureB,fixtureA));
+					_world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true,fixtureB,fixtureA));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureA,fixtureB,contact,true);
 				}
@@ -40,7 +40,7 @@
 				secUserData = fixtureB.GetBody().GetUserData();
 				if(userData is PTrigger && secUserData is PPlayer){
 					trigger = userData as PTrigger;
-					if(!trigger.disabled) _world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true,fixtureA,fixtureB));
+					_world.dispatchEvent(new ContactEvent(PhysicsWorld.TRIGGER_CONTACT,trigger.name,true,fixtureA,fixtureB));
 				}else if(userData is PEntity){ //If the trigger belongs to the player
 					(userData as PEntity).onHit(fixtureB,fixtureA,contact,true);
 				}

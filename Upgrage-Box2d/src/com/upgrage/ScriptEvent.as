@@ -10,6 +10,8 @@
 			_triggerID = data.substring(0, data.indexOf(":"));
 			_scriptType = data.substring(data.indexOf(":") + 1, data.lastIndexOf(":")); 
 			_command = data.substring(data.lastIndexOf(":") + 1, data.length);
+			if (_command == "enemyLock")
+				trace("yeh");
 			trace("TriggerID: " + _triggerID + "\tType: " + _scriptType + "\tCommand: " + _command);
 		}
 		

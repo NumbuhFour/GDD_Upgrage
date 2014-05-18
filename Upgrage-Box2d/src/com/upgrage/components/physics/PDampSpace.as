@@ -8,15 +8,19 @@
 	import Box2D.Dynamics.b2Fixture;
 	import flash.utils.Dictionary;
 	import Box2D.Common.Math.b2Vec2;
+	import Box2D.Dynamics.b2FilterData;
 	
 	
 	public class PDampSpace extends PTrigger {
+
+		protected var _collisionFilter:b2FilterData;
 		
 		private var _addedXVel:Number;
 		private var _addedYVel:Number;
 		private var _dampSet:Number;
 		private var _gravitySetX:Number;
 		private var _gravitySetY:Number;
+		private var _enableInfiniteJumps:Boolean = true;
 		
 		protected var _affectedEntities:Dictionary = new Dictionary();
 		
@@ -51,6 +55,11 @@
 			_fixtureDef.shape = _shape;
 			_fixtureDef.isSensor = true;
 			_fixture = _body.CreateFixture(_fixtureDef);
+
+			_collisionFilter = new b2FilterData();
+			_collisionFilter.groupIndex = -5; //-5 for water, kinda arbitrary
+			
+			_fixture.SetFilterData(_collisionFilter);
 			
 			this._world.addEventListener(PhysicsWorld.TRIGGER_CONTACT, onContact);
 		}
@@ -60,10 +69,13 @@
 				if(key == null || key is DataStore) continue;
 				var phys:PhysicsObj = key as PhysicsObj;
 				phys.body.ApplyImpulse(new b2Vec2(this._addedXVel, this._addedYVel),phys.body.GetWorldCenter());
+				var player:PPlayer = phys as PPlayer;
+				if(player && this._enableInfiniteJumps) {
+					player.midAirJumpsLeft = -1;
+				}
 			}
 		}
 		
-		var testBitch:Object;
 		public function onContact(e:ContactEvent):void{
 			if(e.collider.GetBody().GetUserData() != this) return;
 			if(e.fixture.IsSensor()) return; //If colliding with a sensor, ignore
@@ -73,22 +85,28 @@
 			var player:PPlayer = obj as PPlayer;
 			
 			if(obj == null) return;
-			if(e.colliding){
+			if(e.colliding && !obj.inWater){
 				if(_affectedEntities[obj] != null) return;
 				_affectedEntities[obj] = new DataStore(obj.body.GetLinearDamping(), obj.gravity,(player ? player.Upgrades["mid air jumps"]:0));
 				obj.gravity = new b2Vec2(this._gravitySetX, this._gravitySetY);
 				obj.body.SetLinearDamping(this._dampSet);
-				if(player) player.Upgrades["mid air jumps"] = -1;
-				testBitch = obj;
-			}else{
+				if(player && this._enableInfiniteJumps) {
+					player.Upgrades["mid air jumps"] = -1;
+					player.midAirJumpsLeft = -1;
+				}
+				obj.inWater = true;
+				obj.water = this;
+			}else if(!e.colliding && obj.water == this){
 				var data = DataStore(_affectedEntities[obj]);
 				if(data == null) return;
 				obj.body.SetLinearDamping(data._damp);
 				obj.gravity = data._grav;
 				if(player){
 					player.Upgrades["mid air jumps"] = data._jumps;
+					player.midAirJumpsLeft = data._jumps;
 				}
 				delete _affectedEntities[obj];
+				obj.inWater = false;
 			}
 			
 		}
@@ -125,6 +143,14 @@
 			this._gravitySetY = val;
 		}
 		public function get gravitySetY():Number { return this._gravitySetY; }
+		
+		
+		
+		[Inspectable(name="Inifinite Jumps", type=Boolean, defaultValue="true")]
+		public function set enableInfiniteJumps(val:Boolean):void {
+			this._enableInfiniteJumps = val;
+		}
+		public function get enableInfiniteJumps():Boolean { return this._enableInfiniteJumps; }
 	}
 	
 }

@@ -12,9 +12,13 @@
 		private var _command:String;
 		private var _disabled:Boolean = false;
 		private var _locks:int = 0;
+		private var _enemyLocked:Boolean = false;
+		
 		
 		public function get disabled():Boolean { return _disabled; }
 		public function set disabled(val:Boolean):void { _disabled = val; }
+		public function get enemyLocked():Boolean { return _enemyLocked; }
+		public function set enemyLocked(val:Boolean):void { _enemyLocked = val; }
 		public function get Command():String { return _command; }
 		public function set Command(comm:String) { _command = comm; }
 		
@@ -55,6 +59,7 @@
 			_locks --;
 			if (_locks == 0)
 				this._disabled = false;
+			trace(_triggerID + "\t" + _command + "\t" + _locks);
 		}
 		
 		public function lock(){

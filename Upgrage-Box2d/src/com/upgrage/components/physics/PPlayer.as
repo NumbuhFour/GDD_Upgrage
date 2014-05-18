@@ -120,8 +120,14 @@
 			_upgrades["jump"] = true;
 			
 			_upgrades["can crouch"] = true;
-			_upgrades["crouch speed percent"] = 0.8;
-			_upgrades["crouch height percent"] = 0.8;
+			_upgrades["crouch speed percent"] = 0.6;
+			_upgrades["crouch height percent"] = 0.1;
+			
+			_upgrades["fan level"] = 0; // 0 is no or normal fan, 1 is first broken fan, 2 is really broken fan
+			
+			_upgrades["gills"] = false; // can only breathe underwater
+			_upgrades["fishbowl"] = false; // can breathe anywhere
+			_upgrades["toaster"] = false;
 		}
 		
 		protected override function updateSelfToGraphics():void {
@@ -166,15 +172,14 @@
 		}
 		
 		private function takeInput():void{
-			this.followingObject.visible = false;
 			var currentSpeedSq:Number = _body.GetLinearVelocity().LengthSquared();
 			
-			if(!this._crouching && this._kShift && this._upgrades["can crouch"] && this._hitBelow){
+			if(!this._crouching && this._kDown && this._upgrades["can crouch"] && this._hitBelow){
 				this._crouching = true;
 				if(this._animState == "run") this.followingObject.gotoAndPlay("crouch_walk");
 				else if(this._animState == "idle") this.followingObject.gotoAndStop("crouch");
 				this.shrinkHitbox();
-			}else if(this._crouching && (!this._kShift || !this._hitBelow || !this._upgrades["can crouch"])){
+			}else if(this._crouching && (!this._kDown || !this._hitBelow || !this._upgrades["can crouch"]) && !this._hitAbove){
 				if(this._animState == "run") this.followingObject.gotoAndPlay("run");
 				else if(this._animState == "idle") this.followingObject.gotoAndStop("idle");
 				this._crouching = false;
@@ -183,6 +188,7 @@
 			
 			var maxSpeed = _upgrades["max speed"] * (_crouching ? _upgrades["crouch speed percent"]:1);
 			if(_kRight && !_hitRight && currentSpeedSq < maxSpeed*maxSpeed){
+				trace(_hitAbove);
 				_body.ApplyImpulse(new b2Vec2((_hitBelow ? _upgrades["accel speed onground"]:_upgrades["accel speed inair"])
 												*(_crouching ? _upgrades["crouch speed percent"]:1)
 												*_body.GetMass(),0),new b2Vec2());
@@ -215,6 +221,7 @@
 					_body.SetLinearVelocity(new b2Vec2(_body.GetLinearVelocity().x,0));
 					_body.ApplyImpulse(new b2Vec2(pushOff*_body.GetMass(),-jumpOff*_body.GetMass()),_body.GetWorldCenter());
 					this._midAirJumpsLeft = 0;
+					if(_upgrades["mid air jumps"] == -1) this._midAirJumpsLeft = -1;
 					this._isOnWall = false;	
 					this._canWallJump = false;
 					if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
@@ -299,6 +306,9 @@
 			if(this._animState != "fall" && !_hitBelow && this._body.GetLinearVelocity().y > 1){
 				this.followingObject.gotoAndPlay("fall");
 				this._animState = "fall";
+			}else if(this._animState == "fall" && _hitBelow){
+				this.followingObject.gotoAndPlay(this._crouching ? "crouch" : "idle");
+				this._animState = "idle";
 			}
 			
 			//Setting animation to wallslide while on wall
@@ -418,17 +428,36 @@
 				(_torsoShapeShrunk as b2PolygonShape).SetAsOrientedBox(wid/2*0.98,bHei/2,new b2Vec2(0,(hei/2-rad)-bHei/2),0);
 				
 				_headSenShapeShrunk = new b2PolygonShape();
-				_headSenShapeShrunk.SetAsOrientedBox(wid/2*senShrink,senWid,new b2Vec2(0,(hei/2-rad)-bHei-senWid*2));
+				_headSenShapeShrunk.SetAsOrientedBox(wid/2*senShrink,senWid,new b2Vec2(0,(hei/2-rad)-bHei+senWid*2));
+				
+				_leftSenShapeShrunk = new b2PolygonShape();
+				_leftSenShapeShrunk.SetAsOrientedBox(senWid,hei/2*senShrink/1.5*(_upgrades["crouch height percent"]*2),new b2Vec2(-wid/2-senWid,(hei/2-rad)-bHei-senWid*2));
+				
+				_rightSenShapeShrunk = new b2PolygonShape();
+				_rightSenShapeShrunk.SetAsOrientedBox(senWid,hei/2*senShrink/1.5*(_upgrades["crouch height percent"]*2),new b2Vec2(wid/2+senWid,(hei/2-rad)-bHei-senWid*2));
 			}
 			this._body.DestroyFixture(this._torsoFix);
 			var torsoFixDef:b2FixtureDef = new b2FixtureDef();
 			torsoFixDef.shape = this._torsoShapeShrunk;
 			this._torsoFix = this._body.CreateFixture(torsoFixDef);
 
-			this._body.DestroyFixture(this._headSenFix);
+			/*this._body.DestroyFixture(this._headSenFix);
 			var headFixDef:b2FixtureDef = new b2FixtureDef();
+			headFixDef.isSensor = true;
 			headFixDef.shape = this._headSenShapeShrunk;
-			this._headSenFix = this._body.CreateFixture(headFixDef);
+			this._headSenFix = this._body.CreateFixture(headFixDef);*/
+			
+			this._body.DestroyFixture(this._leftSenFix);
+			var leftSenFixDef:b2FixtureDef = new b2FixtureDef();
+			leftSenFixDef.isSensor = true;
+			leftSenFixDef.shape = this._leftSenShapeShrunk;
+			this._leftSenFix = this._body.CreateFixture(leftSenFixDef);
+			
+			this._body.DestroyFixture(this._rightSenFix);
+			var rightSenFixDef:b2FixtureDef = new b2FixtureDef();
+			rightSenFixDef.isSensor = true;
+			rightSenFixDef.shape = this._rightSenShapeShrunk;
+			this._rightSenFix = this._body.CreateFixture(rightSenFixDef);
 			
 		}
 		//Release crouch
@@ -438,10 +467,22 @@
 			torsoFixDef.shape = this._torsoShape;
 			this._torsoFix = this._body.CreateFixture(torsoFixDef);
 			
-			this._body.DestroyFixture(this._headSenFix);
+			/*this._body.DestroyFixture(this._headSenFix);
 			var headFixDef:b2FixtureDef = new b2FixtureDef();
 			headFixDef.shape = this._headSenShape;
-			this._headSenFix = this._body.CreateFixture(headFixDef);
+			this._headSenFix = this._body.CreateFixture(headFixDef);*/
+			
+			this._body.DestroyFixture(this._leftSenFix);
+			var leftSenFixDef:b2FixtureDef = new b2FixtureDef();
+			leftSenFixDef.isSensor = true;
+			leftSenFixDef.shape = this._leftSenShape;
+			this._leftSenFix = this._body.CreateFixture(leftSenFixDef);
+			
+			this._body.DestroyFixture(this._rightSenFix);
+			var rightSenFixDef:b2FixtureDef = new b2FixtureDef();
+			rightSenFixDef.isSensor = true;
+			rightSenFixDef.shape = this._rightSenShape;
+			this._rightSenFix = this._body.CreateFixture(rightSenFixDef);
 		}
 		
 		protected override function setup(e:Event):void { //Box2d Physics initialization
@@ -473,7 +514,7 @@
 			var senWid:Number = 0.02;
 			var senShrink:Number = 0.95; //How much smaller the sensor is than the player's dimensions
 			_headSenShape = new b2PolygonShape();
-			_headSenShape.SetAsOrientedBox(wid/2*senShrink,senWid,new b2Vec2(0,-hei/2-senWid));
+			_headSenShape.SetAsOrientedBox(wid/2*senShrink,senWid,new b2Vec2(0,-hei/2+senWid*2));
 			var headSenFixDef:b2FixtureDef = new b2FixtureDef();
 			headSenFixDef.shape = _headSenShape;
 			headSenFixDef.isSensor = true;
@@ -504,7 +545,7 @@
 		public override function onHit(fixture:b2Fixture, trigger:b2Fixture, contact:b2Contact, colliding:Boolean):void{
 			//TODO if wall act accordingly, if enemy take damage
 			
-			if(fixture.IsSensor()) return; //If colliding with a sensor, ignore
+			if(fixture.IsSensor() || fixture.GetBody() == this.body) return; //If colliding with a sensor, ignore
 			
 			if(trigger == this._feetSenFix){
 				this._numHitsBelow += (colliding ? 1:-1);
@@ -519,6 +560,10 @@
 				this._numHitsRight += (colliding ? 1:-1);
 				this._hitRight = _numHitsRight > 0;
 			}
+		}
+		
+		public function set midAirJumpsLeft(val:Number):void {
+			this._midAirJumpsLeft = val;
 		}
 	}
 	
