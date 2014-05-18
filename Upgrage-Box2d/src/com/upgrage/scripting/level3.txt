@@ -3,5 +3,6 @@ startTrigger:UPGRADE:mid air jumps 0
 startTrigger:UPGRADE:jetpack false
 startTrigger:UPGRADE:rockets false
 jetpackTrigger:UPGRADE:jetpack true
+jetpackTrigger:SPRITESWAP:phys_player player_jetpack
 jetpackTrigger:UNLOCK:exit
 exit:DIALOG:Everyone loves a jetpack, and I'm sure you two will become great friends.

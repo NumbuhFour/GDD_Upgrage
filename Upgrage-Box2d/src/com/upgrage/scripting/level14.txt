@@ -3,8 +3,14 @@ startTrigger:UPGRADE:mid air jumps 1
 startTrigger:UPGRADE:jetpack false
 startTrigger:UPGRADE:jump force 7
 startTrigger:UPGRADE:rockets false
-startTrigger:UPGRADE:can crouch true
 startTrigger:UPGRADE:wall jump false
 startTrigger:UPGRADE:wall slide false
+startTrigger:UPGRADE:fan level 2
+startTrigger:UPGRADE:gills true
+startTrigger:UPGRADE:toaster true
+startTrigger:UPGRADE:fishbowl true
+fishbowlTrigger:SPRITESWAP:phys_player player_fishbowl
+fishbowlTrigger:UNLOCK:exit
+
 
 exit:DIALOG:

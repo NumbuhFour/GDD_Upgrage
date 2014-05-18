@@ -16,6 +16,8 @@
 	import com.upgrage.components.Projectile;
 	import flash.events.MouseEvent;
 	import flash.geom.Point;
+	import com.upgrage.components.Enemy;
+	import com.upgrage.events.ShotEvent;
 	
 	
 	public class PPlayer extends PEntity {
@@ -244,7 +246,7 @@
 						var currentVel:b2Vec2 = this._body.GetLinearVelocity();
 						_body.SetLinearVelocity(new b2Vec2(currentVel.x,0)); //Reset speed for jumping (dont want to jump while going down)
 						var jumpForce:Number = _upgrades["jump force"];
-						if(!_hitBelow) jumpForce*=0.8; //Cant jump as high second time
+						//if(!_hitBelow) jumpForce*=0.8; //Cant jump as high second time
 						_body.ApplyImpulse(new b2Vec2(0,-jumpForce*_body.GetMass()),new b2Vec2());
 						if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
 						this._animState = "jump";
@@ -550,6 +552,11 @@
 			if(trigger == this._feetSenFix){
 				this._numHitsBelow += (colliding ? 1:-1);
 				this._hitBelow = _numHitsBelow > 0;
+				if (fixture.GetBody().GetUserData() is Enemy/* && fixture.GetBody().GetLinearVelocity().y < -1 && _upgrades["jump force"] <= 7*/){
+					trace("velocity: " + fixture.GetBody().GetLinearVelocity().y);
+					(fixture.GetBody().GetUserData() as Enemy).kill();
+					_world.registerDeath();
+				}
 			}else if(trigger == this._headSenFix){
 				this._numHitsAbove += (colliding ? 1:-1);
 				this._hitAbove = _numHitsAbove > 0;

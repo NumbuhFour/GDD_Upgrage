@@ -1,5 +1,11 @@
-startTrigger:DIALOG:Unfortunately, your jetpack has run out of fuel and I don't have money to buy any more."It's ok though, because your next upgrade is even better than a rocket launcher."Go ahead and pick it up!"Also, clean up the rest of the roaches if you can.
+startTrigger:DIALOG:
+startTrigger:UPGRADE:mid air jumps 1
 startTrigger:UPGRADE:jetpack false
-startTrigger:UPGRADE:jump force 7.4
-startTrigger:UPGRADE:max speed 5
-exit:DIALOG:Thanks for cleaning up the rest of the roaches. The pest control guy never showed up.
+startTrigger:UPGRADE:jump force 7
+startTrigger:UPGRADE:rockets false
+startTrigger:UPGRADE:can crouch true
+startTrigger:UPGRADE:wall jump false
+startTrigger:UPGRADE:wall slide false
+startTrigger:UPGRADE:fan level 1
+
+exit:DIALOG:

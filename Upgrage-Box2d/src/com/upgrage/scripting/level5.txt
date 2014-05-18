@@ -3,4 +3,5 @@ startTrigger:UPGRADE:mid air jumps 0
 startTrigger:UPGRADE:jetpack false
 brickTrigger:UPGRADE:jump force 7
 brickTrigger:UNLOCK:exit
+brickTrigger:SPRITESWAP:phys_player player_brick
 exit:DIALOG:Let's hope you enjoy those bricks, because you can never take them off!
