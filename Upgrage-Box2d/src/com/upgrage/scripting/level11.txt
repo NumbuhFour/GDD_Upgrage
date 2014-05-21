@@ -7,5 +7,5 @@ startTrigger:UPGRADE:wall jump false
 startTrigger:UPGRADE:wall slide false
 startTrigger:UPGRADE:fan level 1
 startTrigger:UPGRADE:gills true
-
+toasterTrigger:
 exit:DIALOG:

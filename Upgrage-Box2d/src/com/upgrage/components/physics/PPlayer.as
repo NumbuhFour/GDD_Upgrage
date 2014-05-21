@@ -247,7 +247,15 @@
 						_body.SetLinearVelocity(new b2Vec2(currentVel.x,0)); //Reset speed for jumping (dont want to jump while going down)
 						var jumpForce:Number = _upgrades["jump force"];
 						//if(!_hitBelow) jumpForce*=0.8; //Cant jump as high second time
-						_body.ApplyImpulse(new b2Vec2(0,-jumpForce*_body.GetMass()),new b2Vec2());
+						if (_upgrades["fan level"] == 2){
+							var angle:Number = Math.random() * Math.PI;
+							var vec:b2Vec2 =  new b2Vec2(Math.cos(angle), -Math.sin(angle));
+							vec.x *= jumpForce*_body.GetMass();
+							vec.y *= jumpForce*_body.GetMass();
+							_body.ApplyImpulse(vec,new b2Vec2());
+						}
+						else
+							_body.ApplyImpulse(new b2Vec2(0,-jumpForce*_body.GetMass()),new b2Vec2());
 						if(this._animState != "jump") this.followingObject.gotoAndPlay("jump");
 						this._animState = "jump";
 					}

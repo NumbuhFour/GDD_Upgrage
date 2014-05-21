@@ -1,4 +1,4 @@
-startTrigger:DIALOG:
+startTrigger:DIALOG:level 13
 startTrigger:UPGRADE:mid air jumps 1
 startTrigger:UPGRADE:jetpack false
 startTrigger:UPGRADE:jump force 7
