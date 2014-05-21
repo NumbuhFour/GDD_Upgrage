@@ -155,10 +155,9 @@
 						_timer.reset();
 						_timer.start();
 					}
-					
 				}
 				if (_timer.isRunning && !_timer.isPaused){
-					//trace(_timer.TimeLeft);					
+					trace(_timer.TimeLeft);					
 					if (_timer.TimeLeft <= 0){
 						if (!_breathing) die();
 						if (_player.Upgrades["motion bomb"]){
@@ -177,6 +176,9 @@
 							_timer.reset();
 							_timer.start();
 							trace(_motionBombState);
+						}
+						if (_player.Upgrades["time bomb"]){
+							die();
 						}
 					}
 				}
@@ -337,7 +339,13 @@
 		
 		private function processTimer(cmd:String){
 			var arr:Array = cmd.split(" ");
-			if (arr[0] == "setTime")
+			if (arr.length == 1){
+				_timer.StartTime = arr[0];
+				_timer.reset();
+				_timer.start();
+				_timer.pause();
+			}
+			else if (arr[0] == "setTime")
 				_timer.StartTime == arr[1];
 			else if (arr[0] == "start")
 				_timer.start();
