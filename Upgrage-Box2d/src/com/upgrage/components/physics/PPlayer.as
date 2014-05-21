@@ -130,6 +130,9 @@
 			_upgrades["gills"] = false; // can only breathe underwater
 			_upgrades["fishbowl"] = false; // can breathe anywhere
 			_upgrades["toaster"] = false;
+			
+			_upgrades["motion bomb"] = false;
+			_upgrades["time bomb"] = false;
 		}
 		
 		protected override function updateSelfToGraphics():void {
@@ -416,6 +419,13 @@
 			this._mouseCoords.x -= parent.x;
 			this._mouseCoords.y -= parent.y;
 		}
+		
+		//checks if player is moving
+		public function checkMovement():Boolean{
+			if (this.body.GetLinearVelocity().LengthSquared() > 1)
+				return true;
+			return false;
+		}
 
 		
 		public function clearListeners(){
@@ -560,8 +570,8 @@
 			if(trigger == this._feetSenFix){
 				this._numHitsBelow += (colliding ? 1:-1);
 				this._hitBelow = _numHitsBelow > 0;
-				if (fixture.GetBody().GetUserData() is Enemy/* && fixture.GetBody().GetLinearVelocity().y < -1 && _upgrades["jump force"] <= 7*/){
-					trace("velocity: " + fixture.GetBody().GetLinearVelocity().y);
+				if (fixture.GetBody().GetUserData() is Enemy && trigger.GetBody().GetLinearVelocity().y > 4 && _upgrades["jump force"] <= 7){
+					trace("velocity: " + trigger.GetBody().GetLinearVelocity().y);
 					(fixture.GetBody().GetUserData() as Enemy).kill();
 					_world.registerDeath();
 				}

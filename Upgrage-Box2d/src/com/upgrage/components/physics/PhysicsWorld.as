@@ -32,10 +32,11 @@
 		private var _wasPDown:Boolean = false;
 		private var _wasMDown:Boolean = false;
 		private var dbg:b2DebugDraw;
-		private var _breathing:Boolean = false;
+		private var _breathing:Boolean = true;
 		private var _bodyChecked:Boolean; // player body triggers multiple contacts, checks for that
 		private var level:uint;
 		private var _numEnemies:int;
+		private var _motionBombState:String = "";
 		
 		private var _scripts:Vector.<ScriptEvent>;
 		private var _events:Vector.<CustomEvent>;
@@ -132,6 +133,7 @@
 				_bodyChecked = false;
 				if(_hitExit){
 					this._stepTimer.stop();
+					cleanup();
 					MovieClip(parent).removeChild(dbg.GetSprite());
 					start();
 					MovieClip(parent.parent).nextFrame();
@@ -146,9 +148,40 @@
 				_bodiesToRemove = new Vector.<b2Body>()
 				//if (_timer.isRunning && _timer.ClockMode)
 				//	((parent.getChildByName("timer") as MovieClip).getChildByName("textField") as TextField).text = _timer.SecondsLeft.toString();
+				if (!_timer.isRunning){
+					if (_player.Upgrades["motion bomb"]){
+						_motionBombState = "green"
+						_timer.StartTime = Math.random() * 5000 + 5000;
+						_timer.reset();
+						_timer.start();
+					}
+					
+				}
 				if (_timer.isRunning && !_timer.isPaused){
-					trace(_timer.TimeLeft);					
-					if (!_breathing && _timer.TimeLeft <= 0)
+					//trace(_timer.TimeLeft);					
+					if (_timer.TimeLeft <= 0){
+						if (!_breathing) die();
+						if (_player.Upgrades["motion bomb"]){
+							if (_motionBombState == "green"){
+								_motionBombState = "orange";
+								_timer.StartTime = 2000;
+							}
+							else if (_motionBombState == "orange"){
+								_motionBombState = "red";
+								_timer.StartTime = 2000;
+							}
+							else if (_motionBombState == "red"){
+								_motionBombState = "green";
+								_timer.StartTime = Math.random() * 5000 + 5000;
+							}
+							_timer.reset();
+							_timer.start();
+							trace(_motionBombState);
+						}
+					}
+				}
+				if (_motionBombState == "red"){
+					if (_player.checkMovement())
 						die();
 				}
 			}
@@ -247,8 +280,6 @@
 				}
 			}
 			if(e.triggerID == "exit" && !_hitExit && !(parent.getChildByName("exit") as PTrigger).enemyLocked){
-				//com.upgrage.DialogBox(getChildByName("dialog")).pushText("You did it!");
-				cleanup();
 				_hitExit = true;
 			}
 		}
@@ -330,6 +361,10 @@
 		
 		private function die(){
 			trace("ded");
+			var explosion:Explosion = new Explosion();
+			explosion.x = _player.x;
+			explosion.y = _player.y;
+			parent.addChild(explosion);
 		}
 
 		public function cleanup(){
